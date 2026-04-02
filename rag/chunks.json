@@ -1,0 +1,4598 @@
+[
+  {
+    "chunk_id": "chunk_0001",
+    "source_file": "01_zones_and_assets.md",
+    "section_title": "Network Model v1 – Zones and Assets",
+    "chunk_type": "zones_assets",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "# Network Model v1 – Zones and Assets"
+  },
+  {
+    "chunk_id": "chunk_0002",
+    "source_file": "01_zones_and_assets.md",
+    "section_title": "Purpose",
+    "chunk_type": "zones_assets",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Purpose\nThis document defines the first layer of the network model for the homelab environment.\nIt focuses only on security zones and the main assets located inside each zone.\nAt this stage, the document does not include detailed service flows, firewall rules, or port-level communication.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0003",
+    "source_file": "01_zones_and_assets.md",
+    "section_title": "Zone: WAN",
+    "chunk_type": "zones_assets",
+    "entities": [
+      "Firewall01"
+    ],
+    "zones": [
+      "WAN"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Zone: WAN\n**Purpose:** External connectivity through pfSense.\n**Assets:**\n- Firewall01 (WAN interface)\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0004",
+    "source_file": "01_zones_and_assets.md",
+    "section_title": "Zone: LAN / DATA",
+    "chunk_type": "zones_assets",
+    "entities": [
+      "DB01",
+      "DC01-CYBERAUDIT"
+    ],
+    "zones": [
+      "LAN / DATA"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Zone: LAN / DATA\n**Subnet:** 192.168.128.0/24\n**Gateway:** 192.168.128.1\n**Purpose:** Core internal infrastructure.\n**Assets:**\n- DC01-CYBERAUDIT\n- DB01\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0005",
+    "source_file": "01_zones_and_assets.md",
+    "section_title": "Zone: APP_ZONE",
+    "chunk_type": "zones_assets",
+    "entities": [
+      "APP01",
+      "APP02"
+    ],
+    "zones": [
+      "APP_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Zone: APP_ZONE\n**Subnet:** 192.168.20.0/24\n**Gateway:** 192.168.20.1\n**Purpose:** Main application servers.\n**Assets:**\n- APP01\n- APP02\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0006",
+    "source_file": "01_zones_and_assets.md",
+    "section_title": "Zone: DMZ_ZONE",
+    "chunk_type": "zones_assets",
+    "entities": [
+      "PROXY01"
+    ],
+    "zones": [
+      "DMZ_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Zone: DMZ_ZONE\n**Subnet:** 192.168.10.0/24\n**Gateway:** 192.168.10.1\n**Purpose:** Proxy services and controlled outbound access.\n**Assets:**\n- PROXY01\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0007",
+    "source_file": "01_zones_and_assets.md",
+    "section_title": "Zone: SERVICE_ZONE",
+    "chunk_type": "zones_assets",
+    "entities": [
+      "IAM01"
+    ],
+    "zones": [
+      "SERVICE_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Zone: SERVICE_ZONE\n**Subnet:** 192.168.30.0/24\n**Gateway:** 192.168.30.1\n**Purpose:** Identity and access management services.\n**Assets:**\n- IAM01\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0008",
+    "source_file": "01_zones_and_assets.md",
+    "section_title": "Zone: MGMT",
+    "chunk_type": "zones_assets",
+    "entities": [
+      "ESXi",
+      "Switch Management"
+    ],
+    "zones": [
+      "MGMT"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Zone: MGMT\n**Subnet:** 192.168.50.0/24\n**Gateway:** 192.168.50.1\n**Purpose:** Infrastructure management network.\n**Assets:**\n- ESXi\n- Switch Management\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0009",
+    "source_file": "01_zones_and_assets.md",
+    "section_title": "Zone: ADMIN",
+    "chunk_type": "zones_assets",
+    "entities": [
+      "Admin laptop"
+    ],
+    "zones": [
+      "ADMIN"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Zone: ADMIN\n**Subnet:** 192.168.60.0/24\n**Gateway:** 192.168.60.1\n**Purpose:** Administrative workstations and privileged access devices.\n**Assets:**\n- Admin laptop\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0010",
+    "source_file": "01_zones_and_assets.md",
+    "section_title": "Zone: EMPLOYEE",
+    "chunk_type": "zones_assets",
+    "entities": [],
+    "zones": [
+      "EMPLOYEE"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Zone: EMPLOYEE\n**Subnet:** 192.168.70.0/24\n**Gateway:** 192.168.70.1\n**Purpose:** Internal employee devices and normal workstation-style systems.\n**Assets:**\n- Employee devices\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0011",
+    "source_file": "01_zones_and_assets.md",
+    "section_title": "Zone: GUEST",
+    "chunk_type": "zones_assets",
+    "entities": [],
+    "zones": [
+      "GUEST"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Zone: GUEST\n**Subnet:** 192.168.80.0/24\n**Gateway:** 192.168.80.1\n**Purpose:** Guest or untrusted access.\n**Assets:**\n- Guest devices\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0012",
+    "source_file": "01_zones_and_assets.md",
+    "section_title": "Notes",
+    "chunk_type": "zones_assets",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Notes\n- This document represents the first layer of the network model only.\n- Flows, services, and security policy logic will be documented separately in later files.\n- The structure is based on the current segmented homelab design."
+  },
+  {
+    "chunk_id": "chunk_0013",
+    "source_file": "02_services.md",
+    "section_title": "Network Model v1 – Services",
+    "chunk_type": "services",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "# Network Model v1 – Services"
+  },
+  {
+    "chunk_id": "chunk_0014",
+    "source_file": "02_services.md",
+    "section_title": "Purpose",
+    "chunk_type": "services",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Purpose\nThis document defines the main services provided by each major asset in the homelab environment.\nAt this stage, it focuses only on service identity and purpose, without documenting detailed communication flows or firewall requirements.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0015",
+    "source_file": "02_services.md",
+    "section_title": "Asset: Firewall01",
+    "chunk_type": "services",
+    "entities": [
+      "Firewall01"
+    ],
+    "zones": [
+      "WAN"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Asset: Firewall01\n**Zone:** WAN / internal segmentation boundary\n**Primary Services:**\n- Network firewalling\n- Inter-zone routing\n- Default gateway\n**Purpose:** Central firewall and routing point for the segmented environment.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0016",
+    "source_file": "02_services.md",
+    "section_title": "Asset: DC01-CYBERAUDIT",
+    "chunk_type": "services",
+    "entities": [
+      "DC01-CYBERAUDIT"
+    ],
+    "zones": [
+      "LAN / DATA"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Asset: DC01-CYBERAUDIT\n**Zone:** LAN / DATA\n**Primary Services:**\n- Active Directory\n- Internal DNS\n**Purpose:** Internal directory foundation for the cyberaudit.local domain and internal name resolution.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0017",
+    "source_file": "02_services.md",
+    "section_title": "Asset: DB01",
+    "chunk_type": "services",
+    "entities": [
+      "DB01",
+      "Vault"
+    ],
+    "zones": [
+      "LAN / DATA"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Asset: DB01\n**Zone:** LAN / DATA\n**Primary Services:**\n- MariaDB database services\n- Vault\n**Purpose:** Hosts the MariaDB layer for the SAAMS environment, including logically separated portal-side and internal audit-side databases, and also hosts Vault for secrets and certificate retrieval.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0018",
+    "source_file": "02_services.md",
+    "section_title": "Asset: APP01",
+    "chunk_type": "services",
+    "entities": [
+      "APP01"
+    ],
+    "zones": [
+      "APP_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Asset: APP01\n**Zone:** APP_ZONE\n**Primary Services:**\n- Customer-facing web portal\n- Nginx reverse proxy\n- TLS termination for portal access\n**Purpose:** Hosts the customer-facing portal and the Nginx reverse proxy layer that listens on HTTPS and forwards traffic to the local portal process on APP01.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0019",
+    "source_file": "02_services.md",
+    "section_title": "Asset: APP02",
+    "chunk_type": "services",
+    "entities": [
+      "APP02"
+    ],
+    "zones": [
+      "APP_ZONE",
+      "EMPLOYEE"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Asset: APP02\n**Zone:** APP_ZONE\n**Primary Services:**\n- Internal employee audit application\n**Purpose:** Hosts the internal C# employee audit application used for the internal workflow.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0020",
+    "source_file": "02_services.md",
+    "section_title": "Asset: IAM01",
+    "chunk_type": "services",
+    "entities": [
+      "IAM01",
+      "Internal API",
+      "Keycloak"
+    ],
+    "zones": [
+      "SERVICE_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Asset: IAM01\n**Zone:** SERVICE_ZONE\n**Primary Services:**\n- Keycloak IAM\n- Internal API\n**Purpose:** Central identity and access management platform for customer and internal authentication, and host of the internal API used by the portal for internal workflow integration.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0021",
+    "source_file": "02_services.md",
+    "section_title": "Asset: PROXY01",
+    "chunk_type": "services",
+    "entities": [
+      "PROXY01"
+    ],
+    "zones": [
+      "DMZ_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Asset: PROXY01\n**Zone:** DMZ_ZONE\n**Primary Services:**\n- Forward proxy\n- Controlled outbound access\n**Purpose:** Dedicated egress-related system for structured outbound Internet access.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0022",
+    "source_file": "02_services.md",
+    "section_title": "Asset: ESXi",
+    "chunk_type": "services",
+    "entities": [
+      "ESXi"
+    ],
+    "zones": [
+      "MGMT"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Asset: ESXi\n**Zone:** MGMT\n**Primary Services:**\n- Virtualization host management\n**Purpose:** Hosts the lab virtual machines and supports infrastructure management.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0023",
+    "source_file": "02_services.md",
+    "section_title": "Asset: Switch Management",
+    "chunk_type": "services",
+    "entities": [
+      "Switch Management"
+    ],
+    "zones": [
+      "MGMT",
+      "ADMIN"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Asset: Switch Management\n**Zone:** MGMT\n**Primary Services:**\n- Switch administration\n**Purpose:** Management interface for the Cisco switch infrastructure.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0024",
+    "source_file": "02_services.md",
+    "section_title": "Asset: Admin laptop",
+    "chunk_type": "services",
+    "entities": [
+      "Admin laptop"
+    ],
+    "zones": [
+      "ADMIN"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Asset: Admin laptop\n**Zone:** ADMIN\n**Primary Services:**\n- Administrative access workstation\n**Purpose:** Used for privileged administrative access to the environment.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0025",
+    "source_file": "02_services.md",
+    "section_title": "Notes",
+    "chunk_type": "services",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Notes\n- This file defines services at a high level only.\n- Detailed flows, dependencies, and ports will be documented separately.\n- No service assumptions should be added unless they are confirmed by the homelab documentation or by the owner."
+  },
+  {
+    "chunk_id": "chunk_0026",
+    "source_file": "03_dependencies.md",
+    "section_title": "Network Model v1 – Dependencies",
+    "chunk_type": "dependencies",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "# Network Model v1 – Dependencies"
+  },
+  {
+    "chunk_id": "chunk_0027",
+    "source_file": "03_dependencies.md",
+    "section_title": "Purpose",
+    "chunk_type": "dependencies",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Purpose\nThis document defines the main logical dependencies between major assets in the homelab environment.\nAt this stage, it focuses on system-to-system dependency relationships only.\nIt does not yet define ports, protocols, or firewall rules.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0028",
+    "source_file": "03_dependencies.md",
+    "section_title": "Asset: DC01-CYBERAUDIT",
+    "chunk_type": "dependencies",
+    "entities": [
+      "DC01-CYBERAUDIT",
+      "PROXY01"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Asset: DC01-CYBERAUDIT\n**Depends on:**\n- PROXY01\n\n**Reasoning:**\nDC01 is currently the internal directory and DNS foundation of the environment.\nIt also provides time-related services within the internal environment.\nFor outbound Internet access, it depends on PROXY01.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0029",
+    "source_file": "03_dependencies.md",
+    "section_title": "Asset: DB01",
+    "chunk_type": "dependencies",
+    "entities": [
+      "DB01",
+      "DC01-CYBERAUDIT",
+      "PROXY01",
+      "Vault"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Asset: DB01\n**Depends on:**\n- DC01-CYBERAUDIT\n- PROXY01\n\n**Reasoning:**\nDB01 is joined to the domain and relies on internal directory, DNS, and time-related services provided by DC01.\nIt hosts the logically separated database layers used by both the portal-side and internal audit-side systems, and also hosts Vault.\nFor outbound Internet access, it depends on PROXY01.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0030",
+    "source_file": "03_dependencies.md",
+    "section_title": "Asset: APP01",
+    "chunk_type": "dependencies",
+    "entities": [
+      "APP01",
+      "IAM01",
+      "DB01",
+      "DC01-CYBERAUDIT",
+      "PROXY01",
+      "Vault",
+      "Internal API",
+      "Keycloak"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Asset: APP01\n**Depends on:**\n- DC01-CYBERAUDIT\n- IAM01\n- DB01\n- Vault on DB01\n- Internal API on IAM01\n\n**Reasoning:**\nAPP01 is joined to the domain and relies on internal directory, DNS, and time-related services provided by DC01.\nAPP01 hosts the customer-facing portal.\nIt also hosts the Nginx reverse proxy layer that listens on HTTPS and forwards traffic to the local portal application process on the same server.\nCustomer authentication depends on Keycloak on IAM01.\nThe application also depends on the portal-side database on DB01 and retrieves database credentials and certificates from Vault on DB01.\nIt communicates with the internal API on IAM01 to create internal requests, retrieve status updates, and download final reports.\nFor outbound Internet access, it depends on PROXY01.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0031",
+    "source_file": "03_dependencies.md",
+    "section_title": "Asset: APP02",
+    "chunk_type": "dependencies",
+    "entities": [
+      "APP02",
+      "IAM01",
+      "DB01",
+      "PROXY01",
+      "Vault",
+      "Keycloak"
+    ],
+    "zones": [
+      "EMPLOYEE"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Asset: APP02\n**Depends on:**\n- IAM01\n- DB01\n- Vault on DB01\n- PROXY01\n\n**Reasoning:**\nAPP02 hosts the internal C# employee audit application.\nEmployee authentication depends on Keycloak on IAM01 through Device Flow and MFA.\nThe application also connects directly to audit_system_db on DB01 and retrieves database credentials, certificates from Vault.\nFor outbound Internet access, it depends on PROXY01.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0032",
+    "source_file": "03_dependencies.md",
+    "section_title": "Asset: IAM01",
+    "chunk_type": "dependencies",
+    "entities": [
+      "IAM01",
+      "DB01",
+      "DC01-CYBERAUDIT",
+      "PROXY01",
+      "Vault",
+      "Internal API",
+      "Keycloak"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Asset: IAM01\n**Depends on:**\n- DC01-CYBERAUDIT\n- DB01\n- Vault on DB01\n- PROXY01\n\n**Reasoning:**\nIAM01 hosts Keycloak and the internal realm is federated with Active Directory through LDAP.\nIt also hosts the internal API, which depends on the internal audit-side database on DB01 and retrieves credentials and certificates from Vault on DB01.\nFor outbound Internet access, it depends on PROXY01.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0033",
+    "source_file": "03_dependencies.md",
+    "section_title": "Asset: PROXY01",
+    "chunk_type": "dependencies",
+    "entities": [
+      "PROXY01",
+      "Firewall01"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Asset: PROXY01\n**Depends on:**\n- Firewall01\n\n**Reasoning:**\nPROXY01 is the designated egress-related system in the design.\nAt the current stage, it represents the main outbound path for most systems, although final enforcement still needs refinement through Firewall01.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0034",
+    "source_file": "03_dependencies.md",
+    "section_title": "Asset: ESXi",
+    "chunk_type": "dependencies",
+    "entities": [
+      "Firewall01",
+      "ESXi",
+      "Switch Management"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Asset: ESXi\n**Depends on:**\n- Firewall01\n- Switch Management\n\n**Reasoning:**\nESXi is part of the infrastructure management layer and depends on the surrounding network and management design.\n\n**Status:** Needs owner confirmation\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0035",
+    "source_file": "03_dependencies.md",
+    "section_title": "Asset: Switch Management",
+    "chunk_type": "dependencies",
+    "entities": [
+      "Firewall01",
+      "Switch Management"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Asset: Switch Management\n**Depends on:**\n- Firewall01\n\n**Reasoning:**\nThe switch management plane exists within the segmented infrastructure and depends on the overall network design.\n\n**Status:** Needs owner confirmation\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0036",
+    "source_file": "03_dependencies.md",
+    "section_title": "Asset: Admin laptop",
+    "chunk_type": "dependencies",
+    "entities": [
+      "Firewall01",
+      "Admin laptop"
+    ],
+    "zones": [
+      "ADMIN"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Asset: Admin laptop\n**Depends on:**\n- Firewall01\n- Managed access to target systems\n\n**Reasoning:**\nThe admin laptop is used for privileged administrative access into the environment.\n\n**Status:** Needs owner confirmation\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0037",
+    "source_file": "03_dependencies.md",
+    "section_title": "Notes",
+    "chunk_type": "dependencies",
+    "entities": [
+      "IAM01",
+      "DB01",
+      "PROXY01",
+      "Vault",
+      "Internal API"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Notes\n- This document captures logical dependencies only.\n- Communication paths, ports, and firewall requirements will be documented separately.\n- The portal-side and internal-side systems are intentionally separated through different application paths and logically separated databases.\n- Vault is hosted on DB01 and Internal API is hosted on IAM01, so they are documented as hosted components rather than separate standalone assets.\n- Outbound access is conceptually centralized through PROXY01, but final enforcement still requires firewall refinement."
+  },
+  {
+    "chunk_id": "chunk_0038",
+    "source_file": "04_required_flows.md",
+    "section_title": "Network Model v1 – Required Flows",
+    "chunk_type": "flows",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "# Network Model v1 – Required Flows"
+  },
+  {
+    "chunk_id": "chunk_0039",
+    "source_file": "04_required_flows.md",
+    "section_title": "Purpose",
+    "chunk_type": "flows",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Purpose\nThis document defines the main communication flows required for the homelab environment to function.\nIt is intended to distinguish between:\n- flows that are operationally required,\n- flows that are currently allowed in the firewall during the build phase,\n- and flows that should later be tightened into a more restrictive security baseline.\n\nThis document does not yet attempt to define final firewall rule syntax.\nIt focuses on architectural communication requirements.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0040",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: APP01 -> IAM01",
+    "chunk_type": "flows",
+    "entities": [
+      "APP01",
+      "IAM01",
+      "Keycloak"
+    ],
+    "zones": [
+      "APP_ZONE",
+      "SERVICE_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "APP01",
+      "assets": [
+        "APP01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "IAM01",
+      "assets": [
+        "IAM01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP01",
+      "IAM01"
+    ],
+    "text": "## Flow: APP01 -> IAM01\n**Purpose:** Customer authentication through Keycloak OIDC  \n**Required for Operation:** Yes  \n**Current State:** Broad inter-zone connectivity currently exists between APP_ZONE and SERVICE_ZONE  \n**Hardening Note:** This should later be restricted to only the specific ports and protocols required for Keycloak-based authentication.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0041",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: APP01 -> DB01",
+    "chunk_type": "flows",
+    "entities": [
+      "APP01",
+      "DB01"
+    ],
+    "zones": [
+      "LAN / DATA",
+      "APP_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "APP01",
+      "assets": [
+        "APP01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "DB01",
+      "assets": [
+        "DB01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP01",
+      "DB01"
+    ],
+    "text": "## Flow: APP01 -> DB01\n**Purpose:** Portal-side database access to saams_portal_db  \n**Required for Operation:** Yes  \n**Current State:** Broad inter-zone connectivity currently exists between APP_ZONE and LAN / DATA  \n**Hardening Note:** This should later be restricted to only the database communication required by APP01.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0042",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: APP01 -> Vault on DB01",
+    "chunk_type": "flows",
+    "entities": [
+      "APP01",
+      "DB01",
+      "Vault"
+    ],
+    "zones": [
+      "LAN / DATA",
+      "APP_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "APP01",
+      "assets": [
+        "APP01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "Vault on DB01",
+      "assets": [
+        "DB01"
+      ],
+      "service": "Vault",
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP01",
+      "DB01"
+    ],
+    "text": "## Flow: APP01 -> Vault on DB01\n**Purpose:** Retrieve database credentials and client certificates for secure database access  \n**Required for Operation:** Yes  \n**Current State:** Broad inter-zone connectivity currently exists between APP_ZONE and LAN / DATA  \n**Hardening Note:** This should later be restricted to only the specific Vault-related access required by APP01.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0043",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: APP01 -> Internal API on IAM01",
+    "chunk_type": "flows",
+    "entities": [
+      "APP01",
+      "IAM01",
+      "Internal API"
+    ],
+    "zones": [
+      "APP_ZONE",
+      "SERVICE_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "APP01",
+      "assets": [
+        "APP01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "Internal API on IAM01",
+      "assets": [
+        "IAM01"
+      ],
+      "service": "Internal API",
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP01",
+      "IAM01"
+    ],
+    "text": "## Flow: APP01 -> Internal API on IAM01\n**Purpose:** Create internal audit requests, retrieve status updates, and download final reports  \n**Required for Operation:** Yes  \n**Current State:** Broad inter-zone connectivity currently exists between APP_ZONE and SERVICE_ZONE  \n**Hardening Note:** This should later be restricted to only the API endpoint access required by the portal.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0044",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: APP01 -> PROXY01",
+    "chunk_type": "flows",
+    "entities": [
+      "APP01",
+      "PROXY01"
+    ],
+    "zones": [
+      "APP_ZONE",
+      "DMZ_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "APP01",
+      "assets": [
+        "APP01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "PROXY01",
+      "assets": [
+        "PROXY01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP01",
+      "PROXY01"
+    ],
+    "text": "## Flow: APP01 -> PROXY01\n**Purpose:** Outbound Internet access through the designated proxy path  \n**Required for Operation:** Yes  \n**Current State:** APP_ZONE currently has broad access toward DMZ_ZONE  \n**Hardening Note:** This should later be restricted so APP01 uses only the required proxy-related outbound path rather than broad access to the DMZ.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0045",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: Nginx on APP01 -> local portal process on APP01",
+    "chunk_type": "flows",
+    "entities": [
+      "APP01"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "Nginx on APP01",
+      "assets": [
+        "APP01"
+      ],
+      "service": "Nginx",
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "local portal process on APP01",
+      "assets": [
+        "APP01"
+      ],
+      "service": "Portal",
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP01"
+    ],
+    "text": "## Flow: Nginx on APP01 -> local portal process on APP01\n**Purpose:** Reverse proxy forwarding from HTTPS listener to the local Node.js portal application  \n**Required for Operation:** Yes  \n**Current State:** Hosted locally on the same asset  \n**Hardening Note:** This co-location is acceptable for the current build phase, but long-term design may review whether reverse proxy and application hosting should remain combined.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0046",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: APP02 -> IAM01",
+    "chunk_type": "flows",
+    "entities": [
+      "APP02",
+      "IAM01",
+      "Keycloak"
+    ],
+    "zones": [
+      "APP_ZONE",
+      "SERVICE_ZONE",
+      "EMPLOYEE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "APP02",
+      "assets": [
+        "APP02"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "IAM01",
+      "assets": [
+        "IAM01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP02",
+      "IAM01"
+    ],
+    "text": "## Flow: APP02 -> IAM01\n**Purpose:** Employee authentication through Keycloak Device Flow with MFA  \n**Required for Operation:** Yes  \n**Current State:** Broad inter-zone connectivity currently exists between APP_ZONE and SERVICE_ZONE  \n**Hardening Note:** This should later be restricted to only the specific authentication-related communication required by the internal employee application.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0047",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: APP02 -> DB01",
+    "chunk_type": "flows",
+    "entities": [
+      "APP02",
+      "DB01"
+    ],
+    "zones": [
+      "LAN / DATA",
+      "APP_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "APP02",
+      "assets": [
+        "APP02"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "DB01",
+      "assets": [
+        "DB01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP02",
+      "DB01"
+    ],
+    "text": "## Flow: APP02 -> DB01\n**Purpose:** Direct access to audit_system_db for internal audit workflow operations  \n**Required for Operation:** Yes  \n**Current State:** Broad inter-zone connectivity currently exists between APP_ZONE and LAN / DATA  \n**Hardening Note:** This should later be restricted to only the specific database communication required by APP02.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0048",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: APP02 -> Vault on DB01",
+    "chunk_type": "flows",
+    "entities": [
+      "APP02",
+      "DB01",
+      "Vault",
+      "Keycloak"
+    ],
+    "zones": [
+      "LAN / DATA",
+      "APP_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "APP02",
+      "assets": [
+        "APP02"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "Vault on DB01",
+      "assets": [
+        "DB01"
+      ],
+      "service": "Vault",
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP02",
+      "DB01"
+    ],
+    "text": "## Flow: APP02 -> Vault on DB01\n**Purpose:** Retrieve database credentials, certificates, and Keycloak-related configuration  \n**Required for Operation:** Yes  \n**Current State:** Broad inter-zone connectivity currently exists between APP_ZONE and LAN / DATA  \n**Hardening Note:** This should later be restricted to only the specific Vault-related access required by APP02.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0049",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: APP02 -> PROXY01",
+    "chunk_type": "flows",
+    "entities": [
+      "APP02",
+      "PROXY01"
+    ],
+    "zones": [
+      "APP_ZONE",
+      "DMZ_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "APP02",
+      "assets": [
+        "APP02"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "PROXY01",
+      "assets": [
+        "PROXY01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP02",
+      "PROXY01"
+    ],
+    "text": "## Flow: APP02 -> PROXY01\n**Purpose:** Outbound Internet access through the designated proxy path  \n**Required for Operation:** Yes  \n**Current State:** APP_ZONE currently has broad access toward DMZ_ZONE  \n**Hardening Note:** This should later be restricted so APP02 uses only the required proxy-related outbound path rather than broad access to the DMZ.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0050",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: IAM01 -> DC01-CYBERAUDIT",
+    "chunk_type": "flows",
+    "entities": [
+      "IAM01",
+      "DC01-CYBERAUDIT",
+      "Keycloak"
+    ],
+    "zones": [
+      "LAN / DATA",
+      "SERVICE_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "IAM01",
+      "assets": [
+        "IAM01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "DC01-CYBERAUDIT",
+      "assets": [
+        "DC01-CYBERAUDIT"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "IAM01",
+      "DC01-CYBERAUDIT"
+    ],
+    "text": "## Flow: IAM01 -> DC01-CYBERAUDIT\n**Purpose:** LDAP federation, internal directory dependency, DNS, and time-related dependency  \n**Required for Operation:** Yes  \n**Current State:** Broad inter-zone connectivity currently exists between SERVICE_ZONE and LAN / DATA  \n**Hardening Note:** This should later be restricted to only the exact identity and infrastructure services required by Keycloak and related components.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0051",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: IAM01 -> DB01",
+    "chunk_type": "flows",
+    "entities": [
+      "IAM01",
+      "DB01",
+      "Internal API"
+    ],
+    "zones": [
+      "LAN / DATA",
+      "SERVICE_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "IAM01",
+      "assets": [
+        "IAM01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "DB01",
+      "assets": [
+        "DB01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "IAM01",
+      "DB01"
+    ],
+    "text": "## Flow: IAM01 -> DB01\n**Purpose:** Internal API access to audit_system_db  \n**Required for Operation:** Yes  \n**Current State:** Broad inter-zone connectivity currently exists between SERVICE_ZONE and LAN / DATA  \n**Hardening Note:** This should later be restricted to only the specific database communication required by the Internal API.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0052",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: IAM01 -> Vault on DB01",
+    "chunk_type": "flows",
+    "entities": [
+      "IAM01",
+      "DB01",
+      "Vault",
+      "Internal API"
+    ],
+    "zones": [
+      "LAN / DATA",
+      "SERVICE_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "IAM01",
+      "assets": [
+        "IAM01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "Vault on DB01",
+      "assets": [
+        "DB01"
+      ],
+      "service": "Vault",
+      "is_zone": false
+    },
+    "flow_assets": [
+      "IAM01",
+      "DB01"
+    ],
+    "text": "## Flow: IAM01 -> Vault on DB01\n**Purpose:** Retrieve database credentials and certificates for Internal API database access  \n**Required for Operation:** Yes  \n**Current State:** Broad inter-zone connectivity currently exists between SERVICE_ZONE and LAN / DATA  \n**Hardening Note:** This should later be restricted to only the specific Vault-related access required by IAM01.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0053",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: IAM01 -> PROXY01",
+    "chunk_type": "flows",
+    "entities": [
+      "IAM01",
+      "PROXY01"
+    ],
+    "zones": [
+      "DMZ_ZONE",
+      "SERVICE_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "IAM01",
+      "assets": [
+        "IAM01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "PROXY01",
+      "assets": [
+        "PROXY01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "IAM01",
+      "PROXY01"
+    ],
+    "text": "## Flow: IAM01 -> PROXY01\n**Purpose:** Outbound Internet access through the designated proxy path  \n**Required for Operation:** Yes  \n**Current State:** SERVICE_ZONE currently has broad access toward DMZ_ZONE  \n**Hardening Note:** This should later be restricted so IAM01 uses only the required proxy-related outbound path rather than broad access to the DMZ.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0054",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: DB01 -> DC01-CYBERAUDIT",
+    "chunk_type": "flows",
+    "entities": [
+      "DB01",
+      "DC01-CYBERAUDIT",
+      "Vault"
+    ],
+    "zones": [
+      "LAN / DATA"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "DB01",
+      "assets": [
+        "DB01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "DC01-CYBERAUDIT",
+      "assets": [
+        "DC01-CYBERAUDIT"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "DB01",
+      "DC01-CYBERAUDIT"
+    ],
+    "text": "## Flow: DB01 -> DC01-CYBERAUDIT\n**Purpose:** Domain, DNS, and time-related dependency for the database and Vault host  \n**Required for Operation:** Yes  \n**Current State:** Broad access currently exists within LAN / DATA  \n**Hardening Note:** This should later be limited to only the infrastructure services required by DB01.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0055",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: DB01 -> PROXY01",
+    "chunk_type": "flows",
+    "entities": [
+      "DB01",
+      "PROXY01"
+    ],
+    "zones": [
+      "LAN / DATA",
+      "DMZ_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "DB01",
+      "assets": [
+        "DB01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "PROXY01",
+      "assets": [
+        "PROXY01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "DB01",
+      "PROXY01"
+    ],
+    "text": "## Flow: DB01 -> PROXY01\n**Purpose:** Outbound Internet access through the designated proxy path  \n**Required for Operation:** Yes  \n**Current State:** LAN / DATA currently has broad access toward DMZ_ZONE  \n**Hardening Note:** This should later be restricted so DB01 uses only the required proxy-related outbound path rather than broad access to the DMZ.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0056",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: DC01-CYBERAUDIT -> PROXY01",
+    "chunk_type": "flows",
+    "entities": [
+      "DC01-CYBERAUDIT",
+      "PROXY01"
+    ],
+    "zones": [
+      "LAN / DATA",
+      "DMZ_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "DC01-CYBERAUDIT",
+      "assets": [
+        "DC01-CYBERAUDIT"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "PROXY01",
+      "assets": [
+        "PROXY01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "DC01-CYBERAUDIT",
+      "PROXY01"
+    ],
+    "text": "## Flow: DC01-CYBERAUDIT -> PROXY01\n**Purpose:** Outbound Internet access through the designated proxy path  \n**Required for Operation:** Yes  \n**Current State:** LAN / DATA currently has broad access toward DMZ_ZONE  \n**Hardening Note:** This should later be restricted so DC01 uses only the required proxy-related outbound path rather than broad access to the DMZ.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0057",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: ADMIN laptop -> target systems",
+    "chunk_type": "flows",
+    "entities": [
+      "Admin laptop"
+    ],
+    "zones": [
+      "ADMIN"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "ADMIN laptop",
+      "assets": [
+        "Admin laptop"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "target systems",
+      "assets": [
+        "Any"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "Admin laptop"
+    ],
+    "text": "## Flow: ADMIN laptop -> target systems\n**Purpose:** Privileged administration and management access into the environment  \n**Required for Operation:** Yes  \n**Current State:** ADMIN segment currently allows very broad access from the admin laptop to any destination  \n**Hardening Note:** This should later be narrowed to management-specific access only, based on actual administrative need and approved target systems.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0058",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: LAN / DATA -> APP_ZONE",
+    "chunk_type": "flows",
+    "entities": [],
+    "zones": [
+      "LAN / DATA",
+      "APP_ZONE"
+    ],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "LAN / DATA",
+      "assets": [
+        "LAN / DATA"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_destination": {
+      "raw": "APP_ZONE",
+      "assets": [
+        "APP_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_assets": [
+      "LAN / DATA",
+      "APP_ZONE"
+    ],
+    "text": "## Flow: LAN / DATA -> APP_ZONE\n**Purpose:** Current build-phase inter-zone communication  \n**Required for Operation:** Partially confirmed  \n**Current State:** Broad access currently exists from LAN / DATA to APP_ZONE  \n**Hardening Note:** This broad access should not be treated as final policy. It should be reviewed and reduced to only confirmed required flows.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0059",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: LAN / DATA -> SERVICE_ZONE",
+    "chunk_type": "flows",
+    "entities": [],
+    "zones": [
+      "LAN / DATA",
+      "SERVICE_ZONE"
+    ],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "LAN / DATA",
+      "assets": [
+        "LAN / DATA"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_destination": {
+      "raw": "SERVICE_ZONE",
+      "assets": [
+        "SERVICE_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_assets": [
+      "LAN / DATA",
+      "SERVICE_ZONE"
+    ],
+    "text": "## Flow: LAN / DATA -> SERVICE_ZONE\n**Purpose:** Current build-phase inter-zone communication  \n**Required for Operation:** Partially confirmed  \n**Current State:** Broad access currently exists from LAN / DATA to SERVICE_ZONE  \n**Hardening Note:** This broad access should not be treated as final policy. It should be reviewed and reduced to only confirmed required flows.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0060",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: LAN / DATA -> DMZ_ZONE",
+    "chunk_type": "flows",
+    "entities": [],
+    "zones": [
+      "LAN / DATA",
+      "DMZ_ZONE"
+    ],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "LAN / DATA",
+      "assets": [
+        "LAN / DATA"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_destination": {
+      "raw": "DMZ_ZONE",
+      "assets": [
+        "DMZ_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_assets": [
+      "LAN / DATA",
+      "DMZ_ZONE"
+    ],
+    "text": "## Flow: LAN / DATA -> DMZ_ZONE\n**Purpose:** Current build-phase inter-zone communication  \n**Required for Operation:** Partially confirmed  \n**Current State:** Broad access currently exists from LAN / DATA to DMZ_ZONE  \n**Hardening Note:** This broad access should not be treated as final policy. It should be reviewed and reduced to only confirmed required flows.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0061",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: APP_ZONE -> LAN / DATA",
+    "chunk_type": "flows",
+    "entities": [
+      "APP01",
+      "APP02",
+      "Vault"
+    ],
+    "zones": [
+      "LAN / DATA",
+      "APP_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "APP_ZONE",
+      "assets": [
+        "APP_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_destination": {
+      "raw": "LAN / DATA",
+      "assets": [
+        "LAN / DATA"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_assets": [
+      "APP_ZONE",
+      "LAN / DATA"
+    ],
+    "text": "## Flow: APP_ZONE -> LAN / DATA\n**Purpose:** Current build-phase inter-zone communication  \n**Required for Operation:** Yes, but only for specific services  \n**Current State:** Broad access currently exists from APP_ZONE to LAN / DATA  \n**Hardening Note:** This must later be narrowed to only APP01/APP02 access required for DB, Vault, and DC-related dependencies where applicable.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0062",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: APP_ZONE -> SERVICE_ZONE",
+    "chunk_type": "flows",
+    "entities": [
+      "APP01",
+      "APP02"
+    ],
+    "zones": [
+      "APP_ZONE",
+      "SERVICE_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "APP_ZONE",
+      "assets": [
+        "APP_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_destination": {
+      "raw": "SERVICE_ZONE",
+      "assets": [
+        "SERVICE_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_assets": [
+      "APP_ZONE",
+      "SERVICE_ZONE"
+    ],
+    "text": "## Flow: APP_ZONE -> SERVICE_ZONE\n**Purpose:** Current build-phase inter-zone communication  \n**Required for Operation:** Yes, but only for specific services  \n**Current State:** Broad access currently exists from APP_ZONE to SERVICE_ZONE  \n**Hardening Note:** This must later be narrowed to only the identity and API communication required by APP01 and APP02.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0063",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: APP_ZONE -> DMZ_ZONE",
+    "chunk_type": "flows",
+    "entities": [
+      "PROXY01"
+    ],
+    "zones": [
+      "APP_ZONE",
+      "DMZ_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "APP_ZONE",
+      "assets": [
+        "APP_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_destination": {
+      "raw": "DMZ_ZONE",
+      "assets": [
+        "DMZ_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_assets": [
+      "APP_ZONE",
+      "DMZ_ZONE"
+    ],
+    "text": "## Flow: APP_ZONE -> DMZ_ZONE\n**Purpose:** Current build-phase inter-zone communication  \n**Required for Operation:** Yes, but only for proxy-related outbound paths  \n**Current State:** Broad access currently exists from APP_ZONE to DMZ_ZONE  \n**Hardening Note:** This must later be narrowed to only proxy-related communication to PROXY01.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0064",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: SERVICE_ZONE -> LAN / DATA",
+    "chunk_type": "flows",
+    "entities": [
+      "IAM01",
+      "DB01",
+      "Vault",
+      "Internal API"
+    ],
+    "zones": [
+      "LAN / DATA",
+      "SERVICE_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "SERVICE_ZONE",
+      "assets": [
+        "SERVICE_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_destination": {
+      "raw": "LAN / DATA",
+      "assets": [
+        "LAN / DATA"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_assets": [
+      "SERVICE_ZONE",
+      "LAN / DATA"
+    ],
+    "text": "## Flow: SERVICE_ZONE -> LAN / DATA\n**Purpose:** Current build-phase inter-zone communication  \n**Required for Operation:** Yes, but only for specific services  \n**Current State:** Broad access currently exists from SERVICE_ZONE to LAN / DATA  \n**Hardening Note:** This must later be narrowed to only the DC01, DB01, and Vault-related communication required by IAM01 and the Internal API.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0065",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: SERVICE_ZONE -> APP_ZONE",
+    "chunk_type": "flows",
+    "entities": [],
+    "zones": [
+      "APP_ZONE",
+      "SERVICE_ZONE"
+    ],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "SERVICE_ZONE",
+      "assets": [
+        "SERVICE_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_destination": {
+      "raw": "APP_ZONE",
+      "assets": [
+        "APP_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_assets": [
+      "SERVICE_ZONE",
+      "APP_ZONE"
+    ],
+    "text": "## Flow: SERVICE_ZONE -> APP_ZONE\n**Purpose:** Current build-phase inter-zone communication  \n**Required for Operation:** Partially confirmed  \n**Current State:** Broad access currently exists from SERVICE_ZONE to APP_ZONE  \n**Hardening Note:** This should be reviewed carefully. Only specifically required return-path or application-related communication should remain in the final policy.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0066",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: SERVICE_ZONE -> DMZ_ZONE",
+    "chunk_type": "flows",
+    "entities": [
+      "PROXY01"
+    ],
+    "zones": [
+      "DMZ_ZONE",
+      "SERVICE_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "SERVICE_ZONE",
+      "assets": [
+        "SERVICE_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_destination": {
+      "raw": "DMZ_ZONE",
+      "assets": [
+        "DMZ_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_assets": [
+      "SERVICE_ZONE",
+      "DMZ_ZONE"
+    ],
+    "text": "## Flow: SERVICE_ZONE -> DMZ_ZONE\n**Purpose:** Current build-phase inter-zone communication  \n**Required for Operation:** Yes, but only for proxy-related outbound paths  \n**Current State:** Broad access currently exists from SERVICE_ZONE to DMZ_ZONE  \n**Hardening Note:** This must later be narrowed to only proxy-related communication to PROXY01.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0067",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: DMZ_ZONE -> any internal destination",
+    "chunk_type": "flows",
+    "entities": [
+      "PROXY01"
+    ],
+    "zones": [
+      "DMZ_ZONE"
+    ],
+    "confidence_tags": [
+      "confirmed",
+      "open_question"
+    ],
+    "flow_source": {
+      "raw": "DMZ_ZONE",
+      "assets": [
+        "DMZ_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_destination": {
+      "raw": "any internal destination",
+      "assets": [],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "DMZ_ZONE"
+    ],
+    "text": "## Flow: DMZ_ZONE -> any internal destination\n**Purpose:** Current build-phase communication model  \n**Required for Operation:** Not fully confirmed  \n**Current State:** DMZ_ZONE currently appears broadly allowed outbound  \n**Hardening Note:** This should be reviewed carefully. The final design should avoid treating the DMZ as a broadly trusted source. Only explicitly required communication from PROXY01 should remain.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0068",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: MGMT_SEGMENT",
+    "chunk_type": "flows",
+    "entities": [],
+    "zones": [
+      "MGMT"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Flow: MGMT_SEGMENT\n**Purpose:** Reserved management area in the current design  \n**Required for Operation:** Not yet modeled in active firewall policy  \n**Current State:** No active rules currently defined  \n**Hardening Note:** Future policy should define exactly what management systems may reach and which protocols are allowed.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0069",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: EMPLOYEE_SEGMENT",
+    "chunk_type": "flows",
+    "entities": [],
+    "zones": [
+      "EMPLOYEE"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Flow: EMPLOYEE_SEGMENT\n**Purpose:** Internal employee workstation zone in the current design  \n**Required for Operation:** Not yet modeled in active firewall policy  \n**Current State:** No active rules currently defined  \n**Hardening Note:** Future policy should define exactly which internal services employee systems may access and block all unnecessary direct access to sensitive zones.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0070",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: GUEST_SEGMENT",
+    "chunk_type": "flows",
+    "entities": [],
+    "zones": [
+      "GUEST"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Flow: GUEST_SEGMENT\n**Purpose:** Guest or untrusted access zone in the current design  \n**Required for Operation:** Not yet modeled in active firewall policy  \n**Current State:** No active rules currently defined  \n**Hardening Note:** Future policy should remain highly restrictive and avoid direct access to sensitive internal services.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0071",
+    "source_file": "04_required_flows.md",
+    "section_title": "Flow: WAN inbound",
+    "chunk_type": "flows",
+    "entities": [],
+    "zones": [
+      "WAN"
+    ],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Flow: WAN inbound\n**Purpose:** External inbound exposure  \n**Required for Operation:** No confirmed inbound pass rules currently required  \n**Current State:** No inbound pass rules currently defined on WAN  \n**Hardening Note:** This is consistent with a safer default posture. Any future WAN exposure should be explicitly justified and tightly scoped.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0072",
+    "source_file": "04_required_flows.md",
+    "section_title": "Notes",
+    "chunk_type": "flows",
+    "entities": [],
+    "zones": [
+      "MGMT",
+      "EMPLOYEE",
+      "GUEST"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Notes\n- This document defines the main architectural flows required by the current environment.\n- It intentionally distinguishes between operational requirements and the broader build-phase firewall permissions currently present.\n- Several currently allowed inter-zone paths are broader than necessary and should not be treated as the final intended security baseline.\n- Final firewall hardening should move from broad zone-to-zone access toward asset-specific and service-specific communication only.\n- MGMT, EMPLOYEE, and GUEST are present in the network design, but they are not yet active parts of the current firewall communication model."
+  },
+  {
+    "chunk_id": "chunk_0073",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Network Model v1 – Port and Protocol Matrix",
+    "chunk_type": "port_matrix",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "# Network Model v1 – Port and Protocol Matrix"
+  },
+  {
+    "chunk_id": "chunk_0074",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Purpose",
+    "chunk_type": "port_matrix",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Purpose\nThis document records the known and required ports and protocols used by the main systems in the homelab environment.\n\nIt is intended to support:\n- future firewall hardening,\n- service-specific access control,\n- AI-assisted reasoning about required communication,\n- and later comparison between broad build-phase access and exact least-privilege communication needs.\n\nThis document should distinguish clearly between:\n- confirmed communication details,\n- and items that still require confirmation,\n- and standard default values declared by the owner.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0075",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: Client -> APP01 (Nginx)",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "APP01"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "Client",
+      "assets": [
+        "Client"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "APP01",
+      "assets": [
+        "APP01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP01"
+    ],
+    "text": "## Flow: Client -> APP01 (Nginx)\n**Source:** Client / browser\n**Destination:** APP01\n**Service:** Nginx reverse proxy\n**Protocol:** HTTPS\n**Port:** 443\n**Direction:** Inbound to APP01\n**Purpose:** Customer-facing secure access to the portal\n**Status:** Confirmed\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0076",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: Nginx on APP01 -> local portal process on APP01",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "APP01"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "Nginx on APP01",
+      "assets": [
+        "APP01"
+      ],
+      "service": "Nginx",
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "local portal process on APP01",
+      "assets": [
+        "APP01"
+      ],
+      "service": "Portal",
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP01"
+    ],
+    "text": "## Flow: Nginx on APP01 -> local portal process on APP01\n**Source:** Nginx on APP01\n**Destination:** Local Node.js portal process on APP01\n**Service:** Reverse proxy forwarding\n**Protocol:** HTTPS\n**Port:** 3000\n**Direction:** Local internal flow on APP01\n**Purpose:** Forward portal traffic from Nginx to the local Express application\n**Status:** Confirmed\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0077",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: APP01 -> IAM01",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "APP01",
+      "IAM01",
+      "Keycloak"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "APP01",
+      "assets": [
+        "APP01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "IAM01",
+      "assets": [
+        "IAM01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP01",
+      "IAM01"
+    ],
+    "text": "## Flow: APP01 -> IAM01\n**Source:** APP01\n**Destination:** IAM01\n**Service:** Keycloak OIDC\n**Protocol:** HTTP\n**Port:** 8080\n**Direction:** Outbound from APP01\n**Purpose:** Customer authentication and OIDC interaction\n**Status:** Confirmed for current observed environment\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0078",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: APP01 -> DB01",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "APP01",
+      "DB01"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "APP01",
+      "assets": [
+        "APP01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "DB01",
+      "assets": [
+        "DB01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP01",
+      "DB01"
+    ],
+    "text": "## Flow: APP01 -> DB01\n**Source:** APP01\n**Destination:** DB01\n**Service:** MariaDB (saams_portal_db)\n**Protocol:** MySQL over TLS / mTLS\n**Port:** 3307\n**Direction:** Outbound from APP01\n**Purpose:** Portal-side database access\n**Status:** Confirmed\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0079",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: APP01 -> Vault on DB01",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "APP01",
+      "DB01",
+      "Vault"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "APP01",
+      "assets": [
+        "APP01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "Vault on DB01",
+      "assets": [
+        "DB01"
+      ],
+      "service": "Vault",
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP01",
+      "DB01"
+    ],
+    "text": "## Flow: APP01 -> Vault on DB01\n**Source:** APP01\n**Destination:** DB01\n**Service:** Vault\n**Protocol:** HTTP\n**Port:** 8200\n**Direction:** Outbound from APP01\n**Purpose:** Retrieve database credentials and client certificates\n**Status:** Confirmed\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0080",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: APP01 -> Internal API on IAM01",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "APP01",
+      "IAM01",
+      "Internal API"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "APP01",
+      "assets": [
+        "APP01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "Internal API on IAM01",
+      "assets": [
+        "IAM01"
+      ],
+      "service": "Internal API",
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP01",
+      "IAM01"
+    ],
+    "text": "## Flow: APP01 -> Internal API on IAM01\n**Source:** APP01\n**Destination:** IAM01\n**Service:** Internal API\n**Protocol:** HTTP\n**Port:** 9090\n**Direction:** Outbound from APP01\n**Purpose:** Create internal requests, retrieve status updates, and download reports\n**Status:** Confirmed\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0081",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: APP02 -> IAM01",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "APP02",
+      "IAM01",
+      "Keycloak"
+    ],
+    "zones": [
+      "EMPLOYEE"
+    ],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "APP02",
+      "assets": [
+        "APP02"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "IAM01",
+      "assets": [
+        "IAM01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP02",
+      "IAM01"
+    ],
+    "text": "## Flow: APP02 -> IAM01\n**Source:** APP02\n**Destination:** IAM01\n**Service:** Keycloak Device Flow\n**Protocol:** HTTP\n**Port:** 8080\n**Direction:** Outbound from APP02\n**Purpose:** Employee authentication through Device Flow and MFA\n**Status:** Confirmed for current observed environment\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0082",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: APP02 -> DB01",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "APP02",
+      "DB01"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "APP02",
+      "assets": [
+        "APP02"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "DB01",
+      "assets": [
+        "DB01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP02",
+      "DB01"
+    ],
+    "text": "## Flow: APP02 -> DB01\n**Source:** APP02\n**Destination:** DB01\n**Service:** MariaDB (audit_system_db)\n**Protocol:** MySQL over TLS / mTLS\n**Port:** 3307\n**Direction:** Outbound from APP02\n**Purpose:** Internal audit workflow database access\n**Status:** Confirmed\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0083",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: APP02 -> Vault on DB01",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "APP02",
+      "DB01",
+      "Vault",
+      "Keycloak"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "APP02",
+      "assets": [
+        "APP02"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "Vault on DB01",
+      "assets": [
+        "DB01"
+      ],
+      "service": "Vault",
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP02",
+      "DB01"
+    ],
+    "text": "## Flow: APP02 -> Vault on DB01\n**Source:** APP02\n**Destination:** DB01\n**Service:** Vault\n**Protocol:** HTTP\n**Port:** 8200\n**Direction:** Outbound from APP02\n**Purpose:** Retrieve database credentials, certificates, and Keycloak configuration\n**Status:** Confirmed\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0084",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: IAM01 / Internal API -> DB01",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "IAM01",
+      "DB01",
+      "Internal API"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "IAM01 / Internal API",
+      "assets": [
+        "IAM01",
+        "Internal API"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "DB01",
+      "assets": [
+        "DB01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "IAM01",
+      "Internal API",
+      "DB01"
+    ],
+    "text": "## Flow: IAM01 / Internal API -> DB01\n**Source:** IAM01\n**Destination:** DB01\n**Service:** MariaDB (audit_system_db)\n**Protocol:** MySQL over TLS / mTLS\n**Port:** 3307\n**Direction:** Outbound from IAM01\n**Purpose:** Internal API database access\n**Status:** Confirmed\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0085",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: IAM01 / Internal API -> Vault on DB01",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "IAM01",
+      "DB01",
+      "Vault",
+      "Internal API"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "IAM01 / Internal API",
+      "assets": [
+        "IAM01",
+        "Internal API"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "Vault on DB01",
+      "assets": [
+        "DB01"
+      ],
+      "service": "Vault",
+      "is_zone": false
+    },
+    "flow_assets": [
+      "IAM01",
+      "Internal API",
+      "DB01"
+    ],
+    "text": "## Flow: IAM01 / Internal API -> Vault on DB01\n**Source:** IAM01\n**Destination:** DB01\n**Service:** Vault\n**Protocol:** HTTP\n**Port:** 8200\n**Direction:** Outbound from IAM01\n**Purpose:** Retrieve database credentials and certificates for Internal API database access\n**Status:** Confirmed\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0086",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: IAM01 -> DC01-CYBERAUDIT (DNS)",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "IAM01",
+      "DC01-CYBERAUDIT"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "IAM01",
+      "assets": [
+        "IAM01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "DC01-CYBERAUDIT",
+      "assets": [
+        "DC01-CYBERAUDIT"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "IAM01",
+      "DC01-CYBERAUDIT"
+    ],
+    "text": "## Flow: IAM01 -> DC01-CYBERAUDIT (DNS)\n**Source:** IAM01\n**Destination:** DC01-CYBERAUDIT\n**Service:** DNS\n**Protocol:** UDP\n**Port:** 53\n**Direction:** Outbound from IAM01\n**Purpose:** Internal name resolution\n**Status:** Confirmed\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0087",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: IAM01 -> DC01-CYBERAUDIT (LDAP)",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "IAM01",
+      "DC01-CYBERAUDIT",
+      "Keycloak"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "standard_default_declared_by_owner"
+    ],
+    "flow_source": {
+      "raw": "IAM01",
+      "assets": [
+        "IAM01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "DC01-CYBERAUDIT",
+      "assets": [
+        "DC01-CYBERAUDIT"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "IAM01",
+      "DC01-CYBERAUDIT"
+    ],
+    "text": "## Flow: IAM01 -> DC01-CYBERAUDIT (LDAP)\n**Source:** IAM01\n**Destination:** DC01-CYBERAUDIT\n**Service:** LDAP federation\n**Protocol:** TCP\n**Port:** 389\n**Direction:** Outbound from IAM01\n**Purpose:** Active Directory federation for Keycloak\n**Status:** Standard default declared by owner\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0088",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: IAM01 -> DC01-CYBERAUDIT (Time)",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "IAM01",
+      "DC01-CYBERAUDIT"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "standard_default_declared_by_owner"
+    ],
+    "flow_source": {
+      "raw": "IAM01",
+      "assets": [
+        "IAM01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "DC01-CYBERAUDIT",
+      "assets": [
+        "DC01-CYBERAUDIT"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "IAM01",
+      "DC01-CYBERAUDIT"
+    ],
+    "text": "## Flow: IAM01 -> DC01-CYBERAUDIT (Time)\n**Source:** IAM01\n**Destination:** DC01-CYBERAUDIT\n**Service:** Time / NTP\n**Protocol:** UDP\n**Port:** 123\n**Direction:** Outbound from IAM01\n**Purpose:** Time synchronization\n**Status:** Standard default declared by owner\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0089",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: APP01 -> DC01-CYBERAUDIT (DNS)",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "APP01",
+      "DC01-CYBERAUDIT"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "APP01",
+      "assets": [
+        "APP01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "DC01-CYBERAUDIT",
+      "assets": [
+        "DC01-CYBERAUDIT"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP01",
+      "DC01-CYBERAUDIT"
+    ],
+    "text": "## Flow: APP01 -> DC01-CYBERAUDIT (DNS)\n**Source:** APP01\n**Destination:** DC01-CYBERAUDIT\n**Service:** DNS\n**Protocol:** UDP\n**Port:** 53\n**Direction:** Outbound from APP01\n**Purpose:** Internal name resolution\n**Status:** Standardized across domain-joined systems, confirmed by owner\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0090",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: APP01 -> DC01-CYBERAUDIT (Time)",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "APP01",
+      "DC01-CYBERAUDIT"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "standard_default_declared_by_owner"
+    ],
+    "flow_source": {
+      "raw": "APP01",
+      "assets": [
+        "APP01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "DC01-CYBERAUDIT",
+      "assets": [
+        "DC01-CYBERAUDIT"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP01",
+      "DC01-CYBERAUDIT"
+    ],
+    "text": "## Flow: APP01 -> DC01-CYBERAUDIT (Time)\n**Source:** APP01\n**Destination:** DC01-CYBERAUDIT\n**Service:** Time / NTP\n**Protocol:** UDP\n**Port:** 123\n**Direction:** Outbound from APP01\n**Purpose:** Time synchronization\n**Status:** Standard default declared by owner\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0091",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: APP02 -> DC01-CYBERAUDIT (DNS)",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "APP02",
+      "DC01-CYBERAUDIT"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "APP02",
+      "assets": [
+        "APP02"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "DC01-CYBERAUDIT",
+      "assets": [
+        "DC01-CYBERAUDIT"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP02",
+      "DC01-CYBERAUDIT"
+    ],
+    "text": "## Flow: APP02 -> DC01-CYBERAUDIT (DNS)\n**Source:** APP02\n**Destination:** DC01-CYBERAUDIT\n**Service:** DNS\n**Protocol:** UDP\n**Port:** 53\n**Direction:** Outbound from APP02\n**Purpose:** Internal name resolution\n**Status:** Standardized across domain-joined systems, confirmed by owner\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0092",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: APP02 -> DC01-CYBERAUDIT (Time)",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "APP02",
+      "DC01-CYBERAUDIT"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "standard_default_declared_by_owner"
+    ],
+    "flow_source": {
+      "raw": "APP02",
+      "assets": [
+        "APP02"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "DC01-CYBERAUDIT",
+      "assets": [
+        "DC01-CYBERAUDIT"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP02",
+      "DC01-CYBERAUDIT"
+    ],
+    "text": "## Flow: APP02 -> DC01-CYBERAUDIT (Time)\n**Source:** APP02\n**Destination:** DC01-CYBERAUDIT\n**Service:** Time / NTP\n**Protocol:** UDP\n**Port:** 123\n**Direction:** Outbound from APP02\n**Purpose:** Time synchronization\n**Status:** Standard default declared by owner\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0093",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: DB01 -> DC01-CYBERAUDIT (DNS)",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "DB01",
+      "DC01-CYBERAUDIT"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "DB01",
+      "assets": [
+        "DB01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "DC01-CYBERAUDIT",
+      "assets": [
+        "DC01-CYBERAUDIT"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "DB01",
+      "DC01-CYBERAUDIT"
+    ],
+    "text": "## Flow: DB01 -> DC01-CYBERAUDIT (DNS)\n**Source:** DB01\n**Destination:** DC01-CYBERAUDIT\n**Service:** DNS\n**Protocol:** UDP\n**Port:** 53\n**Direction:** Outbound from DB01\n**Purpose:** Internal name resolution\n**Status:** Standardized across domain-joined systems, confirmed by owner\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0094",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: DB01 -> DC01-CYBERAUDIT (Time)",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "DB01",
+      "DC01-CYBERAUDIT"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "standard_default_declared_by_owner"
+    ],
+    "flow_source": {
+      "raw": "DB01",
+      "assets": [
+        "DB01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "DC01-CYBERAUDIT",
+      "assets": [
+        "DC01-CYBERAUDIT"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "DB01",
+      "DC01-CYBERAUDIT"
+    ],
+    "text": "## Flow: DB01 -> DC01-CYBERAUDIT (Time)\n**Source:** DB01\n**Destination:** DC01-CYBERAUDIT\n**Service:** Time / NTP\n**Protocol:** UDP\n**Port:** 123\n**Direction:** Outbound from DB01\n**Purpose:** Time synchronization\n**Status:** Standard default declared by owner\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0095",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: DC01-CYBERAUDIT -> PROXY01",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "DC01-CYBERAUDIT",
+      "PROXY01"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "DC01-CYBERAUDIT",
+      "assets": [
+        "DC01-CYBERAUDIT"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "PROXY01",
+      "assets": [
+        "PROXY01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "DC01-CYBERAUDIT",
+      "PROXY01"
+    ],
+    "text": "## Flow: DC01-CYBERAUDIT -> PROXY01\n**Source:** DC01-CYBERAUDIT\n**Destination:** PROXY01\n**Service:** Outbound proxy path\n**Protocol:** HTTP proxy\n**Port:** 3128\n**Direction:** Outbound from DC01\n**Purpose:** Controlled Internet egress\n**Status:** Confirmed for current observed environment\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0096",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: DB01 -> PROXY01",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "DB01",
+      "PROXY01"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "DB01",
+      "assets": [
+        "DB01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "PROXY01",
+      "assets": [
+        "PROXY01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "DB01",
+      "PROXY01"
+    ],
+    "text": "## Flow: DB01 -> PROXY01\n**Source:** DB01\n**Destination:** PROXY01\n**Service:** Outbound proxy path\n**Protocol:** HTTP proxy\n**Port:** 3128\n**Direction:** Outbound from DB01\n**Purpose:** Controlled Internet egress\n**Status:** Confirmed for current observed environment\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0097",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: APP01 -> PROXY01",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "APP01",
+      "PROXY01"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "APP01",
+      "assets": [
+        "APP01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "PROXY01",
+      "assets": [
+        "PROXY01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP01",
+      "PROXY01"
+    ],
+    "text": "## Flow: APP01 -> PROXY01\n**Source:** APP01\n**Destination:** PROXY01\n**Service:** Outbound proxy path\n**Protocol:** HTTP proxy\n**Port:** 3128\n**Direction:** Outbound from APP01\n**Purpose:** Controlled Internet egress\n**Status:** Confirmed for current observed environment\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0098",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: APP02 -> PROXY01",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "APP02",
+      "PROXY01"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "APP02",
+      "assets": [
+        "APP02"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "PROXY01",
+      "assets": [
+        "PROXY01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP02",
+      "PROXY01"
+    ],
+    "text": "## Flow: APP02 -> PROXY01\n**Source:** APP02\n**Destination:** PROXY01\n**Service:** Outbound proxy path\n**Protocol:** HTTP proxy\n**Port:** 3128\n**Direction:** Outbound from APP02\n**Purpose:** Controlled Internet egress\n**Status:** Confirmed for current observed environment\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0099",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: IAM01 -> PROXY01",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "IAM01",
+      "PROXY01"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "IAM01",
+      "assets": [
+        "IAM01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "PROXY01",
+      "assets": [
+        "PROXY01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "IAM01",
+      "PROXY01"
+    ],
+    "text": "## Flow: IAM01 -> PROXY01\n**Source:** IAM01\n**Destination:** PROXY01\n**Service:** Outbound proxy path\n**Protocol:** HTTP proxy\n**Port:** 3128\n**Direction:** Outbound from IAM01\n**Purpose:** Controlled Internet egress\n**Status:** Confirmed for current observed environment\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0100",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Flow: Admin laptop -> target systems",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "Admin laptop"
+    ],
+    "zones": [
+      "ADMIN"
+    ],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "Admin laptop",
+      "assets": [
+        "Admin laptop"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "target systems",
+      "assets": [
+        "Any"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "Admin laptop"
+    ],
+    "text": "## Flow: Admin laptop -> target systems\n**Source:** Admin laptop\n**Destination:** Any destination\n**Service:** Administrative access\n**Protocol:** Broad open access\n**Port:** Any\n**Direction:** Outbound from Admin laptop\n**Purpose:** Current privileged administration model\n**Status:** Confirmed current firewall state\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0101",
+    "source_file": "04a_port_and_protocol_matrix.md",
+    "section_title": "Notes",
+    "chunk_type": "port_matrix",
+    "entities": [
+      "Keycloak"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "standard_default_declared_by_owner"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Notes\n- This file focuses on service-specific communication details rather than broad zone-level permissions.\n- A \"Standard default declared by owner\" status means the value was intentionally accepted for the model, even if it was not directly observed in packet capture or configuration screenshots.\n- The current firewall is broader than this matrix and should not be treated as proof that every currently allowed path is actually required.\n- This file should later become one of the most important inputs for firewall refinement and AI-assisted least-privilege reasoning.\n- Keycloak is currently observed running in development mode on HTTP/8080, which should not be treated as the final hardened exposure model."
+  },
+  {
+    "chunk_id": "chunk_0102",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "Network Model v1 – Evidence Notes",
+    "chunk_type": "evidence",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "# Network Model v1 – Evidence Notes"
+  },
+  {
+    "chunk_id": "chunk_0103",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "Purpose",
+    "chunk_type": "evidence",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Purpose\nThis document records where important communication details were obtained from.\n\nIt helps distinguish between:\n- information confirmed directly from code,\n- information confirmed from environment or configuration files,\n- information observed through packet capture,\n- and standard default values declared by the owner.\n\nThis file is not the main communication model.\nIt is only a supporting traceability note.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0104",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "Confirmed from Code",
+    "chunk_type": "evidence",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Confirmed from Code"
+  },
+  {
+    "chunk_id": "chunk_0105",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "APP01 local portal process",
+    "chunk_type": "evidence",
+    "entities": [
+      "APP01"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### APP01 local portal process\n- Observed in `index.js`\n- Local Node.js application listens on `127.0.0.1:3000`\n- Used behind Nginx reverse proxy"
+  },
+  {
+    "chunk_id": "chunk_0106",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "Internal API application port",
+    "chunk_type": "evidence",
+    "entities": [
+      "Internal API"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### Internal API application port\n- Observed in Internal API code\n- Internal API listens on port `9090`"
+  },
+  {
+    "chunk_id": "chunk_0107",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "MariaDB port",
+    "chunk_type": "evidence",
+    "entities": [
+      "APP01",
+      "APP02",
+      "Internal API"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### MariaDB port\n- Observed in:\n  - APP01 `db.js`\n  - Internal API `db.js`\n  - APP02 C# code\n- Database communication uses port `3307`"
+  },
+  {
+    "chunk_id": "chunk_0108",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "APP01 -> Internal API",
+    "chunk_type": "evidence",
+    "entities": [
+      "APP01",
+      "Internal API"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### APP01 -> Internal API\n- Observed in APP01 `.env`\n- `INTERNAL_API_BASE_URL = http://192.168.30.10:9090`"
+  },
+  {
+    "chunk_id": "chunk_0109",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "APP01 -> Vault",
+    "chunk_type": "evidence",
+    "entities": [
+      "APP01",
+      "Vault"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### APP01 -> Vault\n- Observed in APP01 `.env`\n- `VAULT_ADDR = http://192.168.128.131:8200`"
+  },
+  {
+    "chunk_id": "chunk_0110",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "Internal API -> Vault",
+    "chunk_type": "evidence",
+    "entities": [
+      "Vault",
+      "Internal API"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### Internal API -> Vault\n- Observed in Internal API `.env`\n- `VAULT_ADDR = http://192.168.128.131:8200`"
+  },
+  {
+    "chunk_id": "chunk_0111",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "APP02 -> Vault",
+    "chunk_type": "evidence",
+    "entities": [
+      "APP02",
+      "Vault"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### APP02 -> Vault\n- Observed in APP02 C# code\n- Default Vault address points to `http://192.168.128.131:8200`\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0112",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "Confirmed from Configuration",
+    "chunk_type": "evidence",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Confirmed from Configuration"
+  },
+  {
+    "chunk_id": "chunk_0113",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "Nginx on APP01",
+    "chunk_type": "evidence",
+    "entities": [
+      "APP01"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### Nginx on APP01\n- Observed in Nginx configuration\n- Reverse proxy listens on `443`\n- Proxies traffic to `https://127.0.0.1:3000`"
+  },
+  {
+    "chunk_id": "chunk_0114",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "Keycloak current port",
+    "chunk_type": "evidence",
+    "entities": [
+      "IAM01",
+      "Keycloak"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### Keycloak current port\n- Observed from running Keycloak output on IAM01\n- Current observed state: `http://0.0.0.0:8080`\n- This reflects the current environment and should not be treated as the final hardened exposure model"
+  },
+  {
+    "chunk_id": "chunk_0115",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "Proxy port on PROXY01",
+    "chunk_type": "evidence",
+    "entities": [
+      "PROXY01"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### Proxy port on PROXY01\n- Observed from proxy configuration screenshot\n- Proxy address: `192.168.10.10`\n- Proxy port: `3128`"
+  },
+  {
+    "chunk_id": "chunk_0116",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "Vault current port",
+    "chunk_type": "evidence",
+    "entities": [
+      "Vault"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### Vault current port\n- Observed from Vault startup screen\n- Current observed state: `http://192.168.128.131:8200`\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0117",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "Confirmed from Packet Capture",
+    "chunk_type": "evidence",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Confirmed from Packet Capture"
+  },
+  {
+    "chunk_id": "chunk_0118",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "IAM01 -> DC01 DNS",
+    "chunk_type": "evidence",
+    "entities": [
+      "IAM01"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### IAM01 -> DC01 DNS\n- Observed in Wireshark\n- Source: `192.168.30.10`\n- Destination: `192.168.128.10`\n- Protocol: `UDP`\n- Destination Port: `53`\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0119",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "Confirmed by Owner",
+    "chunk_type": "evidence",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Confirmed by Owner"
+  },
+  {
+    "chunk_id": "chunk_0120",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "Domain-joined systems using DC01 for DNS and time",
+    "chunk_type": "evidence",
+    "entities": [
+      "APP01",
+      "APP02",
+      "IAM01",
+      "DB01"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed",
+      "owner_confirmed"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### Domain-joined systems using DC01 for DNS and time\nThe owner confirmed that the following systems are inside the domain and use DC01 for DNS and time:\n- IAM01\n- APP01\n- APP02\n- DB01"
+  },
+  {
+    "chunk_id": "chunk_0121",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "Proxy usage",
+    "chunk_type": "evidence",
+    "entities": [
+      "APP01",
+      "APP02",
+      "IAM01",
+      "DB01",
+      "PROXY01"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed",
+      "owner_confirmed"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### Proxy usage\nThe owner confirmed that the following systems currently rely on PROXY01 for outbound Internet access:\n- APP01\n- APP02\n- IAM01\n- DB01\n- DC01"
+  },
+  {
+    "chunk_id": "chunk_0122",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "Admin laptop access model",
+    "chunk_type": "evidence",
+    "entities": [
+      "Admin laptop"
+    ],
+    "zones": [
+      "ADMIN"
+    ],
+    "confidence_tags": [
+      "confirmed",
+      "owner_confirmed"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### Admin laptop access model\nThe owner confirmed that the admin laptop currently has broad open access.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0123",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "Standard Default Values Declared by Owner",
+    "chunk_type": "evidence",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Standard Default Values Declared by Owner"
+  },
+  {
+    "chunk_id": "chunk_0124",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "IAM01 -> DC01 LDAP",
+    "chunk_type": "evidence",
+    "entities": [
+      "IAM01"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### IAM01 -> DC01 LDAP\n- Port: `389/TCP`\n- Used as the accepted standard default for the current model"
+  },
+  {
+    "chunk_id": "chunk_0125",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "Domain-joined systems -> DC01 time service",
+    "chunk_type": "evidence",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### Domain-joined systems -> DC01 time service\n- Port: `123/UDP`\n- Used as the accepted standard default for the current model\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0126",
+    "source_file": "04b_evidence_notes.md",
+    "section_title": "Notes",
+    "chunk_type": "evidence",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [
+      "open_question"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Notes\n- This file is optional support documentation.\n- The main model should still be read primarily from:\n  - required flows,\n  - port and protocol matrix,\n  - blocked or unnecessary flows,\n  - open questions and assumptions,\n  - and target security intent.\n- This file exists only to preserve traceability and confidence level for selected technical details."
+  },
+  {
+    "chunk_id": "chunk_0127",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Network Model v1 – Blocked or Unnecessary Flows",
+    "chunk_type": "blocked_flows",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "# Network Model v1 – Blocked or Unnecessary Flows"
+  },
+  {
+    "chunk_id": "chunk_0128",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Purpose",
+    "chunk_type": "blocked_flows",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Purpose\nThis document defines communication paths that should not be treated as part of the final intended security baseline.\nIt focuses on:\n- flows that appear broader than necessary in the current build phase,\n- flows that should later be blocked or tightly restricted,\n- and areas where current access should not be interpreted as permanent design intent.\n\nThis document does not attempt to define final firewall syntax.\nIt focuses on security intent and reduction of unnecessary exposure.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0129",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Flow: LAN / DATA -> APP_ZONE (broad access)",
+    "chunk_type": "blocked_flows",
+    "entities": [],
+    "zones": [
+      "LAN / DATA",
+      "APP_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "LAN / DATA",
+      "assets": [
+        "LAN / DATA"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_destination": {
+      "raw": "APP_ZONE",
+      "assets": [
+        "APP_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_assets": [
+      "LAN / DATA",
+      "APP_ZONE"
+    ],
+    "text": "## Flow: LAN / DATA -> APP_ZONE (broad access)\n**Current State:** Broad access currently exists  \n**Should Remain Broad in Final Design:** No  \n**Reasoning:** Core infrastructure should not maintain unrestricted access to application systems unless specific service dependencies require it.  \n**Target State:** Only explicitly required communication should remain.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0130",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Flow: LAN / DATA -> SERVICE_ZONE (broad access)",
+    "chunk_type": "blocked_flows",
+    "entities": [],
+    "zones": [
+      "LAN / DATA",
+      "SERVICE_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "LAN / DATA",
+      "assets": [
+        "LAN / DATA"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_destination": {
+      "raw": "SERVICE_ZONE",
+      "assets": [
+        "SERVICE_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_assets": [
+      "LAN / DATA",
+      "SERVICE_ZONE"
+    ],
+    "text": "## Flow: LAN / DATA -> SERVICE_ZONE (broad access)\n**Current State:** Broad access currently exists  \n**Should Remain Broad in Final Design:** No  \n**Reasoning:** Core infrastructure should not maintain unrestricted access to identity services unless specific operational dependencies require it.  \n**Target State:** Restrict to required infrastructure and identity-related communication only.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0131",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Flow: LAN / DATA -> DMZ_ZONE (broad access)",
+    "chunk_type": "blocked_flows",
+    "entities": [],
+    "zones": [
+      "LAN / DATA",
+      "DMZ_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "LAN / DATA",
+      "assets": [
+        "LAN / DATA"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_destination": {
+      "raw": "DMZ_ZONE",
+      "assets": [
+        "DMZ_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_assets": [
+      "LAN / DATA",
+      "DMZ_ZONE"
+    ],
+    "text": "## Flow: LAN / DATA -> DMZ_ZONE (broad access)\n**Current State:** Broad access currently exists  \n**Should Remain Broad in Final Design:** No  \n**Reasoning:** Broad access from core infrastructure into the DMZ increases unnecessary trust exposure.  \n**Target State:** Limit communication to explicitly required proxy-related paths only.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0132",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Flow: APP_ZONE -> LAN / DATA (broad access)",
+    "chunk_type": "blocked_flows",
+    "entities": [
+      "APP01",
+      "APP02",
+      "Vault"
+    ],
+    "zones": [
+      "LAN / DATA",
+      "APP_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "APP_ZONE",
+      "assets": [
+        "APP_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_destination": {
+      "raw": "LAN / DATA",
+      "assets": [
+        "LAN / DATA"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_assets": [
+      "APP_ZONE",
+      "LAN / DATA"
+    ],
+    "text": "## Flow: APP_ZONE -> LAN / DATA (broad access)\n**Current State:** Broad access currently exists  \n**Should Remain Broad in Final Design:** No  \n**Reasoning:** APP01 and APP02 do require communication into LAN / DATA, but only for specific functions such as database access, Vault access, and selected DC-related services.  \n**Target State:** Restrict to asset-specific and service-specific communication only.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0133",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Flow: APP_ZONE -> SERVICE_ZONE (broad access)",
+    "chunk_type": "blocked_flows",
+    "entities": [
+      "APP01",
+      "APP02",
+      "Internal API"
+    ],
+    "zones": [
+      "APP_ZONE",
+      "SERVICE_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "APP_ZONE",
+      "assets": [
+        "APP_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_destination": {
+      "raw": "SERVICE_ZONE",
+      "assets": [
+        "SERVICE_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_assets": [
+      "APP_ZONE",
+      "SERVICE_ZONE"
+    ],
+    "text": "## Flow: APP_ZONE -> SERVICE_ZONE (broad access)\n**Current State:** Broad access currently exists  \n**Should Remain Broad in Final Design:** No  \n**Reasoning:** APP01 and APP02 require access to IAM-related services, but not unrestricted access to the entire SERVICE_ZONE.  \n**Target State:** Restrict to only the identity and internal API communication actually required.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0134",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Flow: APP_ZONE -> DMZ_ZONE (broad access)",
+    "chunk_type": "blocked_flows",
+    "entities": [
+      "PROXY01"
+    ],
+    "zones": [
+      "APP_ZONE",
+      "DMZ_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "APP_ZONE",
+      "assets": [
+        "APP_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_destination": {
+      "raw": "DMZ_ZONE",
+      "assets": [
+        "DMZ_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_assets": [
+      "APP_ZONE",
+      "DMZ_ZONE"
+    ],
+    "text": "## Flow: APP_ZONE -> DMZ_ZONE (broad access)\n**Current State:** Broad access currently exists  \n**Should Remain Broad in Final Design:** No  \n**Reasoning:** APP systems should not have unrestricted access into the DMZ.  \n**Target State:** Restrict to proxy-related communication to PROXY01 only.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0135",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Flow: SERVICE_ZONE -> LAN / DATA (broad access)",
+    "chunk_type": "blocked_flows",
+    "entities": [
+      "IAM01",
+      "DB01",
+      "Vault"
+    ],
+    "zones": [
+      "LAN / DATA",
+      "SERVICE_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "SERVICE_ZONE",
+      "assets": [
+        "SERVICE_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_destination": {
+      "raw": "LAN / DATA",
+      "assets": [
+        "LAN / DATA"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_assets": [
+      "SERVICE_ZONE",
+      "LAN / DATA"
+    ],
+    "text": "## Flow: SERVICE_ZONE -> LAN / DATA (broad access)\n**Current State:** Broad access currently exists  \n**Should Remain Broad in Final Design:** No  \n**Reasoning:** IAM01 requires selected access to DC01, DB01, and Vault on DB01, but broad access to the whole LAN / DATA zone is not justified.  \n**Target State:** Restrict to only required identity, database, Vault, DNS, and time-related communication.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0136",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Flow: SERVICE_ZONE -> APP_ZONE (broad access)",
+    "chunk_type": "blocked_flows",
+    "entities": [],
+    "zones": [
+      "APP_ZONE",
+      "SERVICE_ZONE"
+    ],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": {
+      "raw": "SERVICE_ZONE",
+      "assets": [
+        "SERVICE_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_destination": {
+      "raw": "APP_ZONE",
+      "assets": [
+        "APP_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_assets": [
+      "SERVICE_ZONE",
+      "APP_ZONE"
+    ],
+    "text": "## Flow: SERVICE_ZONE -> APP_ZONE (broad access)\n**Current State:** Broad access currently exists  \n**Should Remain Broad in Final Design:** No  \n**Reasoning:** Broad reverse trust from SERVICE_ZONE into application systems is not justified unless specific communication is confirmed.  \n**Target State:** Keep only explicitly required return-path or service-specific access.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0137",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Flow: SERVICE_ZONE -> DMZ_ZONE (broad access)",
+    "chunk_type": "blocked_flows",
+    "entities": [
+      "PROXY01"
+    ],
+    "zones": [
+      "DMZ_ZONE",
+      "SERVICE_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "SERVICE_ZONE",
+      "assets": [
+        "SERVICE_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_destination": {
+      "raw": "DMZ_ZONE",
+      "assets": [
+        "DMZ_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_assets": [
+      "SERVICE_ZONE",
+      "DMZ_ZONE"
+    ],
+    "text": "## Flow: SERVICE_ZONE -> DMZ_ZONE (broad access)\n**Current State:** Broad access currently exists  \n**Should Remain Broad in Final Design:** No  \n**Reasoning:** IAM-related systems should not have unrestricted access into the DMZ.  \n**Target State:** Restrict to proxy-related outbound communication to PROXY01 only.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0138",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Flow: DMZ_ZONE -> any internal destination",
+    "chunk_type": "blocked_flows",
+    "entities": [
+      "PROXY01"
+    ],
+    "zones": [
+      "DMZ_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "DMZ_ZONE",
+      "assets": [
+        "DMZ_ZONE"
+      ],
+      "service": null,
+      "is_zone": true
+    },
+    "flow_destination": {
+      "raw": "any internal destination",
+      "assets": [],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "DMZ_ZONE"
+    ],
+    "text": "## Flow: DMZ_ZONE -> any internal destination\n**Current State:** Broad access currently appears to exist  \n**Should Remain Broad in Final Design:** No  \n**Reasoning:** The DMZ should not act as a broadly trusted source into internal zones.  \n**Target State:** Only explicitly required communication from PROXY01 should remain. Any unnecessary internal reachability from DMZ should be blocked.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0139",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Flow: ADMIN laptop -> any destination",
+    "chunk_type": "blocked_flows",
+    "entities": [
+      "Admin laptop"
+    ],
+    "zones": [
+      "ADMIN"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "ADMIN laptop",
+      "assets": [
+        "Admin laptop"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "any destination",
+      "assets": [
+        "Any"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "Admin laptop"
+    ],
+    "text": "## Flow: ADMIN laptop -> any destination\n**Current State:** Broad access currently exists from 192.168.60.120 to any destination  \n**Should Remain Broad in Final Design:** No  \n**Reasoning:** Administrative access is operationally important, but unrestricted any-to-any access should not be treated as a permanent baseline.  \n**Target State:** Restrict administrative access to approved targets, management protocols, and justified operational needs only.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0140",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Flow: APP01 -> entire SERVICE_ZONE",
+    "chunk_type": "blocked_flows",
+    "entities": [
+      "APP01",
+      "IAM01",
+      "Internal API",
+      "Keycloak"
+    ],
+    "zones": [
+      "SERVICE_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "APP01",
+      "assets": [
+        "APP01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "entire SERVICE_ZONE",
+      "assets": [],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP01"
+    ],
+    "text": "## Flow: APP01 -> entire SERVICE_ZONE\n**Current State:** Broad zone-level access currently exists  \n**Should Remain Broad in Final Design:** No  \n**Reasoning:** APP01 needs Keycloak and the Internal API on IAM01, but it does not need unrestricted access to all services in SERVICE_ZONE.  \n**Target State:** Limit access to IAM01 and only the required authentication/API-related services.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0141",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Flow: APP02 -> entire SERVICE_ZONE",
+    "chunk_type": "blocked_flows",
+    "entities": [
+      "APP02",
+      "IAM01",
+      "Keycloak"
+    ],
+    "zones": [
+      "SERVICE_ZONE",
+      "EMPLOYEE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "APP02",
+      "assets": [
+        "APP02"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "entire SERVICE_ZONE",
+      "assets": [],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP02"
+    ],
+    "text": "## Flow: APP02 -> entire SERVICE_ZONE\n**Current State:** Broad zone-level access currently exists  \n**Should Remain Broad in Final Design:** No  \n**Reasoning:** APP02 needs Keycloak on IAM01 for employee authentication, but not broad access across the entire SERVICE_ZONE.  \n**Target State:** Limit access to IAM01 and only the required authentication-related services.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0142",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Flow: APP01 -> entire LAN / DATA",
+    "chunk_type": "blocked_flows",
+    "entities": [
+      "APP01",
+      "DB01",
+      "Vault"
+    ],
+    "zones": [
+      "LAN / DATA"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "APP01",
+      "assets": [
+        "APP01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "entire LAN / DATA",
+      "assets": [],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP01"
+    ],
+    "text": "## Flow: APP01 -> entire LAN / DATA\n**Current State:** Broad zone-level access currently exists  \n**Should Remain Broad in Final Design:** No  \n**Reasoning:** APP01 needs access to DB01 and Vault on DB01, but not unrestricted access to all systems in LAN / DATA.  \n**Target State:** Limit access to DB01 and only the specific database and Vault-related services required.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0143",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Flow: APP02 -> entire LAN / DATA",
+    "chunk_type": "blocked_flows",
+    "entities": [
+      "APP02",
+      "DB01",
+      "Vault"
+    ],
+    "zones": [
+      "LAN / DATA"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "APP02",
+      "assets": [
+        "APP02"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "entire LAN / DATA",
+      "assets": [],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "APP02"
+    ],
+    "text": "## Flow: APP02 -> entire LAN / DATA\n**Current State:** Broad zone-level access currently exists  \n**Should Remain Broad in Final Design:** No  \n**Reasoning:** APP02 needs access to DB01, Vault on DB01, and selected DC-related services, but not unrestricted access to all systems in LAN / DATA.  \n**Target State:** Limit access to DB01, DC01, and only the exact required services.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0144",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Flow: IAM01 -> entire LAN / DATA",
+    "chunk_type": "blocked_flows",
+    "entities": [
+      "IAM01",
+      "DB01",
+      "Vault"
+    ],
+    "zones": [
+      "LAN / DATA"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "IAM01",
+      "assets": [
+        "IAM01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "entire LAN / DATA",
+      "assets": [],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "IAM01"
+    ],
+    "text": "## Flow: IAM01 -> entire LAN / DATA\n**Current State:** Broad zone-level access currently exists  \n**Should Remain Broad in Final Design:** No  \n**Reasoning:** IAM01 requires communication with DC01, DB01, and Vault on DB01, but unrestricted access to all systems in LAN / DATA is broader than necessary.  \n**Target State:** Limit access to the exact required infrastructure services only.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0145",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Flow: DB01 -> broad access to DMZ_ZONE",
+    "chunk_type": "blocked_flows",
+    "entities": [
+      "DB01",
+      "PROXY01"
+    ],
+    "zones": [
+      "DMZ_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "DB01",
+      "assets": [
+        "DB01"
+      ],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "broad access to DMZ_ZONE",
+      "assets": [],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [
+      "DB01"
+    ],
+    "text": "## Flow: DB01 -> broad access to DMZ_ZONE\n**Current State:** Broad zone-level access currently exists  \n**Should Remain Broad in Final Design:** No  \n**Reasoning:** DB01 may need outbound proxy-related access, but it does not need unrestricted reachability to the DMZ.  \n**Target State:** Restrict to only the required proxy path to PROXY01.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0146",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Flow: DC01 -> broad access to DMZ_ZONE",
+    "chunk_type": "blocked_flows",
+    "entities": [
+      "PROXY01"
+    ],
+    "zones": [
+      "DMZ_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": {
+      "raw": "DC01",
+      "assets": [],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_destination": {
+      "raw": "broad access to DMZ_ZONE",
+      "assets": [],
+      "service": null,
+      "is_zone": false
+    },
+    "flow_assets": [],
+    "text": "## Flow: DC01 -> broad access to DMZ_ZONE\n**Current State:** Broad zone-level access currently exists  \n**Should Remain Broad in Final Design:** No  \n**Reasoning:** DC01 may need outbound proxy-related access, but it does not need unrestricted reachability to the DMZ.  \n**Target State:** Restrict to only the required proxy path to PROXY01.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0147",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Flow: MGMT_SEGMENT undefined access model",
+    "chunk_type": "blocked_flows",
+    "entities": [],
+    "zones": [
+      "MGMT"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Flow: MGMT_SEGMENT undefined access model\n**Current State:** No active rules currently defined  \n**Should Remain Undefined in Final Design:** No  \n**Reasoning:** A management network should not remain policy-undefined in a mature environment.  \n**Target State:** Define explicit management-only communication paths and block unnecessary access.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0148",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Flow: EMPLOYEE_SEGMENT undefined access model",
+    "chunk_type": "blocked_flows",
+    "entities": [],
+    "zones": [
+      "EMPLOYEE"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Flow: EMPLOYEE_SEGMENT undefined access model\n**Current State:** No active rules currently defined  \n**Should Remain Undefined in Final Design:** No  \n**Reasoning:** Employee systems should not be left without a clear communication policy in the final design.  \n**Target State:** Define exactly what internal services employee systems may access and block unnecessary direct reachability to sensitive zones.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0149",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Flow: GUEST_SEGMENT undefined access model",
+    "chunk_type": "blocked_flows",
+    "entities": [],
+    "zones": [
+      "GUEST"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Flow: GUEST_SEGMENT undefined access model\n**Current State:** No active rules currently defined  \n**Should Remain Undefined in Final Design:** No  \n**Reasoning:** Guest systems should remain highly restricted and isolated from sensitive internal services.  \n**Target State:** Explicitly restrict guest access and avoid direct communication with trusted internal zones.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0150",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Flow: WAN inbound exposure",
+    "chunk_type": "blocked_flows",
+    "entities": [],
+    "zones": [
+      "WAN"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Flow: WAN inbound exposure\n**Current State:** No inbound pass rules currently defined  \n**Should Be Added Broadly in Final Design:** No  \n**Reasoning:** The absence of inbound WAN exposure is currently consistent with a safer default posture.  \n**Target State:** Only add WAN-facing access if there is a clearly justified requirement and tightly scoped protection around it.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0151",
+    "source_file": "05_blocked_or_unnecessary_flows.md",
+    "section_title": "Notes",
+    "chunk_type": "blocked_flows",
+    "entities": [],
+    "zones": [
+      "WAN"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Notes\n- This document captures communication that should not remain broad in the final intended design.\n- Many currently allowed zone-to-zone paths appear to be build-phase allowances rather than permanent policy decisions.\n- The final target state should move from broad zone-based trust to asset-specific and service-specific communication only.\n- This document should be read together with the required flows document, since some currently allowed paths include both valid operational communication and unnecessary excess exposure."
+  },
+  {
+    "chunk_id": "chunk_0152",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "Network Model v1 – Open Questions and Assumptions",
+    "chunk_type": "open_questions",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [
+      "open_question"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "# Network Model v1 – Open Questions and Assumptions"
+  },
+  {
+    "chunk_id": "chunk_0153",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "Purpose",
+    "chunk_type": "open_questions",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed",
+      "open_question"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Purpose\nThis document records:\n- confirmed facts used in the current network model,\n- assumptions that should not be treated as final facts,\n- and open questions that require later confirmation.\n\nThe goal is to avoid silent assumptions and keep the model grounded in confirmed information.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0154",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "Confirmed Facts",
+    "chunk_type": "open_questions",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Confirmed Facts"
+  },
+  {
+    "chunk_id": "chunk_0155",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "1. Network Segmentation",
+    "chunk_type": "open_questions",
+    "entities": [],
+    "zones": [
+      "WAN",
+      "LAN / DATA",
+      "APP_ZONE",
+      "DMZ_ZONE",
+      "SERVICE_ZONE",
+      "MGMT",
+      "ADMIN",
+      "EMPLOYEE",
+      "GUEST"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### 1. Network Segmentation\nThe homelab is segmented into the following main zones:\n- WAN\n- LAN / DATA\n- APP_ZONE\n- DMZ_ZONE\n- SERVICE_ZONE\n- MGMT\n- ADMIN\n- EMPLOYEE\n- GUEST"
+  },
+  {
+    "chunk_id": "chunk_0156",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "2. Main Assets by Zone",
+    "chunk_type": "open_questions",
+    "entities": [
+      "APP01",
+      "APP02",
+      "IAM01",
+      "DB01",
+      "DC01-CYBERAUDIT",
+      "PROXY01",
+      "ESXi",
+      "Switch Management",
+      "Admin laptop"
+    ],
+    "zones": [
+      "LAN / DATA",
+      "APP_ZONE",
+      "DMZ_ZONE",
+      "SERVICE_ZONE",
+      "MGMT",
+      "ADMIN",
+      "EMPLOYEE",
+      "GUEST"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### 2. Main Assets by Zone\n- LAN / DATA:\n  - DC01-CYBERAUDIT\n  - DB01\n- APP_ZONE:\n  - APP01\n  - APP02\n- DMZ_ZONE:\n  - PROXY01\n- SERVICE_ZONE:\n  - IAM01\n- MGMT:\n  - ESXi\n  - Switch Management\n- ADMIN:\n  - Admin laptop\n- EMPLOYEE:\n  - Employee devices\n- GUEST:\n  - Guest devices"
+  },
+  {
+    "chunk_id": "chunk_0157",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "3. Main Service Placement",
+    "chunk_type": "open_questions",
+    "entities": [
+      "APP01",
+      "APP02",
+      "IAM01",
+      "DB01",
+      "PROXY01",
+      "Vault",
+      "Internal API",
+      "Keycloak"
+    ],
+    "zones": [
+      "EMPLOYEE"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### 3. Main Service Placement\n- APP01 hosts the customer-facing portal\n- APP02 hosts the internal C# employee audit application\n- IAM01 hosts Keycloak and the Internal API\n- DB01 hosts MariaDB and Vault\n- PROXY01 is the designated outbound proxy-related system\n- DC01 provides Active Directory, DNS, and time-related services"
+  },
+  {
+    "chunk_id": "chunk_0158",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "4. Database Architecture",
+    "chunk_type": "open_questions",
+    "entities": [
+      "DB01"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### 4. Database Architecture\nDB01 hosts two logically separated databases:\n- saams_portal_db\n- audit_system_db"
+  },
+  {
+    "chunk_id": "chunk_0159",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "5. Vault Usage",
+    "chunk_type": "open_questions",
+    "entities": [
+      "APP01",
+      "APP02",
+      "IAM01",
+      "DB01",
+      "Vault",
+      "Internal API"
+    ],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### 5. Vault Usage\nThe following components are confirmed to retrieve secrets and/or certificates from Vault on DB01:\n- APP01\n- APP02\n- Internal API on IAM01"
+  },
+  {
+    "chunk_id": "chunk_0160",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "6. Keycloak Usage",
+    "chunk_type": "open_questions",
+    "entities": [
+      "APP01",
+      "APP02",
+      "IAM01",
+      "Keycloak"
+    ],
+    "zones": [
+      "EMPLOYEE"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### 6. Keycloak Usage\n- APP01 depends on Keycloak for customer authentication\n- APP02 depends on Keycloak for employee authentication through Device Flow with MFA\n- IAM01 depends on DC01 for LDAP federation"
+  },
+  {
+    "chunk_id": "chunk_0161",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "7. Proxy Usage",
+    "chunk_type": "open_questions",
+    "entities": [
+      "APP01",
+      "APP02",
+      "IAM01",
+      "DB01",
+      "PROXY01"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### 7. Proxy Usage\nThe following systems currently rely on PROXY01 for outbound Internet access:\n- APP01\n- APP02\n- IAM01\n- DB01\n- DC01"
+  },
+  {
+    "chunk_id": "chunk_0162",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "8. Firewall State",
+    "chunk_type": "open_questions",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### 8. Firewall State\nThe current firewall state includes broad inter-zone allow rules in several internal zones.\nThis reflects a build-phase configuration rather than a final least-privilege policy baseline."
+  },
+  {
+    "chunk_id": "chunk_0163",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "9. WAN Inbound",
+    "chunk_type": "open_questions",
+    "entities": [],
+    "zones": [
+      "WAN"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### 9. WAN Inbound\nNo inbound pass rules are currently defined on WAN."
+  },
+  {
+    "chunk_id": "chunk_0164",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "10. Zone Policy Coverage",
+    "chunk_type": "open_questions",
+    "entities": [],
+    "zones": [
+      "MGMT",
+      "EMPLOYEE",
+      "GUEST"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### 10. Zone Policy Coverage\nNo active interface rules are currently defined for:\n- MGMT_SEGMENT\n- EMPLOYEE_SEGMENT\n- GUEST_SEGMENT\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0165",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "Current Assumptions Used in the Model",
+    "chunk_type": "open_questions",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Current Assumptions Used in the Model"
+  },
+  {
+    "chunk_id": "chunk_0166",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "Assumption 1",
+    "chunk_type": "open_questions",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### Assumption 1\nBroad inter-zone access currently exists for build-phase functionality and troubleshooting.\n\n**Status:** Reasonable and supported by current firewall screenshots, but should not be treated as the final intended design.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0167",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "Assumption 2",
+    "chunk_type": "open_questions",
+    "entities": [],
+    "zones": [
+      "MGMT",
+      "EMPLOYEE",
+      "GUEST"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### Assumption 2\nMGMT, EMPLOYEE, and GUEST are present in the architecture but are not yet active parts of the current production communication model.\n\n**Status:** Reasonable based on current firewall state, but may evolve later.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0168",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "Assumption 3",
+    "chunk_type": "open_questions",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### Assumption 3\nThe current network model focuses on the main operational systems rather than every possible infrastructure dependency.\n\n**Status:** Intentional scope choice for v1.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0169",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "Open Questions",
+    "chunk_type": "open_questions",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [
+      "open_question"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Open Questions"
+  },
+  {
+    "chunk_id": "chunk_0170",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "Open Question 1",
+    "chunk_type": "open_questions",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed",
+      "open_question"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### Open Question 1\nWhat are the exact ports and protocols required for each confirmed dependency?\n\n**Reasoning:**\nThe current model documents high-level required flows, but not yet exact port-level communication.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0171",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "Open Question 2",
+    "chunk_type": "open_questions",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [
+      "open_question"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### Open Question 2\nWhich of the currently broad inter-zone rules are still genuinely needed for the build phase, and which are already unnecessary?\n\n**Reasoning:**\nSome current firewall permissions may no longer be required even for temporary operation.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0172",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "Open Question 3",
+    "chunk_type": "open_questions",
+    "entities": [],
+    "zones": [
+      "LAN / DATA",
+      "APP_ZONE",
+      "DMZ_ZONE",
+      "SERVICE_ZONE",
+      "ADMIN"
+    ],
+    "confidence_tags": [
+      "open_question"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### Open Question 3\nWhat should the final least-privilege communication model look like for:\n- LAN / DATA\n- APP_ZONE\n- SERVICE_ZONE\n- DMZ_ZONE\n- ADMIN_SEGMENT\n\n**Reasoning:**\nThe current model documents broad build-phase access, not the final hardened target state.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0173",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "Open Question 4",
+    "chunk_type": "open_questions",
+    "entities": [],
+    "zones": [
+      "MGMT"
+    ],
+    "confidence_tags": [
+      "open_question"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### Open Question 4\nWhat exact management policy should apply to MGMT_SEGMENT in the final design?\n\n**Reasoning:**\nMGMT exists architecturally, but does not yet have an active communication policy defined.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0174",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "Open Question 5",
+    "chunk_type": "open_questions",
+    "entities": [],
+    "zones": [
+      "EMPLOYEE"
+    ],
+    "confidence_tags": [
+      "open_question"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### Open Question 5\nWhat exact access policy should apply to EMPLOYEE_SEGMENT in the final design?\n\n**Reasoning:**\nEMPLOYEE exists architecturally, but does not yet have an active communication policy defined.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0175",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "Open Question 6",
+    "chunk_type": "open_questions",
+    "entities": [],
+    "zones": [
+      "GUEST"
+    ],
+    "confidence_tags": [
+      "open_question"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### Open Question 6\nWhat exact access policy should apply to GUEST_SEGMENT in the final design?\n\n**Reasoning:**\nGUEST exists architecturally, but does not yet have an active communication policy defined.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0176",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "Open Question 7",
+    "chunk_type": "open_questions",
+    "entities": [],
+    "zones": [
+      "WAN"
+    ],
+    "confidence_tags": [
+      "open_question"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### Open Question 7\nShould any WAN-facing exposure be introduced later, or should the environment remain without inbound WAN pass rules?\n\n**Reasoning:**\nThe current posture is safer by default, but future design decisions may change this if external access is needed.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0177",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "Open Question 8",
+    "chunk_type": "open_questions",
+    "entities": [
+      "Admin laptop"
+    ],
+    "zones": [
+      "ADMIN"
+    ],
+    "confidence_tags": [
+      "open_question"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### Open Question 8\nWhat is the final desired restriction model for the Admin laptop?\n\n**Reasoning:**\nThe admin laptop currently has very broad access, but the final intended management model is not yet fully defined.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0178",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "Modeling Rule for This Project",
+    "chunk_type": "open_questions",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed",
+      "open_question"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Modeling Rule for This Project\nIf a dependency, flow, service, or trust relationship is not clearly confirmed by documentation, code, or direct owner confirmation, it must not be treated as a fact.\n\nInstead, it should be recorded here as:\n- an open question,\n- a possible future clarification,\n- or a scoped assumption that is explicitly marked as non-final.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0179",
+    "source_file": "06_open_questions_and_assumptions.md",
+    "section_title": "Notes",
+    "chunk_type": "open_questions",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed",
+      "open_question"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Notes\n- This document exists to reduce hidden assumptions in the AI-ready model.\n- It should be updated whenever new evidence confirms or rejects an open question.\n- This file is especially important because the future AI agent must be grounded in confirmed knowledge rather than inferred but unverified claims."
+  },
+  {
+    "chunk_id": "chunk_0180",
+    "source_file": "07_target_security_intent.md",
+    "section_title": "Network Model v1 – Target Security Intent",
+    "chunk_type": "target_intent",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "# Network Model v1 – Target Security Intent"
+  },
+  {
+    "chunk_id": "chunk_0181",
+    "source_file": "07_target_security_intent.md",
+    "section_title": "Purpose",
+    "chunk_type": "target_intent",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Purpose\nThis document defines the intended security direction of the network model.\nIt does not describe the current firewall state only.\nInstead, it explains the target security intent that should guide future hardening, policy refinement, and AI-assisted reasoning.\n\nThe purpose of this file is to help the future AI agent understand not only what exists today, but what the environment is trying to become.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0182",
+    "source_file": "07_target_security_intent.md",
+    "section_title": "1. General Security Intent",
+    "chunk_type": "target_intent",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## 1. General Security Intent\n\nThe target network design should move from broad build-phase connectivity to a more controlled and auditable least-privilege model.\n\nThe current environment is functional and segmented, but many inter-zone permissions are still broader than the final intended posture.\nThe final design should reduce unnecessary trust between zones and allow only communication that is clearly justified by application, identity, management, or operational requirements.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0183",
+    "source_file": "07_target_security_intent.md",
+    "section_title": "2. Zone Separation Intent",
+    "chunk_type": "target_intent",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## 2. Zone Separation Intent"
+  },
+  {
+    "chunk_id": "chunk_0184",
+    "source_file": "07_target_security_intent.md",
+    "section_title": "LAN / DATA",
+    "chunk_type": "target_intent",
+    "entities": [
+      "Vault"
+    ],
+    "zones": [
+      "LAN / DATA"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### LAN / DATA\nThis zone should remain highly trusted and should host core internal infrastructure such as:\n- Active Directory\n- DNS\n- Database services\n- Vault\n\nIt should not be broadly reachable by other zones.\nOnly explicitly required communication to specific assets and services should be allowed."
+  },
+  {
+    "chunk_id": "chunk_0185",
+    "source_file": "07_target_security_intent.md",
+    "section_title": "APP_ZONE",
+    "chunk_type": "target_intent",
+    "entities": [],
+    "zones": [
+      "APP_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### APP_ZONE\nThis zone should host business application systems only.\nApplication systems should not have broad trust into core infrastructure or identity services.\nThey should be allowed to communicate only with the exact systems and services they need."
+  },
+  {
+    "chunk_id": "chunk_0186",
+    "source_file": "07_target_security_intent.md",
+    "section_title": "SERVICE_ZONE",
+    "chunk_type": "target_intent",
+    "entities": [],
+    "zones": [
+      "SERVICE_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### SERVICE_ZONE\nThis zone should host identity-related services and similar supporting functions.\nIt should not be treated as broadly trusted by application systems or by other internal zones.\nCommunication into and out of this zone should be tightly scoped to actual IAM and service integration needs."
+  },
+  {
+    "chunk_id": "chunk_0187",
+    "source_file": "07_target_security_intent.md",
+    "section_title": "DMZ_ZONE",
+    "chunk_type": "target_intent",
+    "entities": [],
+    "zones": [
+      "DMZ_ZONE"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### DMZ_ZONE\nThis zone should not become a broadly trusted transit area.\nIts final purpose should remain narrow and controlled.\nOnly specifically justified communication to or from DMZ services should be allowed."
+  },
+  {
+    "chunk_id": "chunk_0188",
+    "source_file": "07_target_security_intent.md",
+    "section_title": "ADMIN_SEGMENT",
+    "chunk_type": "target_intent",
+    "entities": [],
+    "zones": [
+      "ADMIN"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### ADMIN_SEGMENT\nThis zone should be used for privileged administration only.\nIt should not remain any-to-any in the final design.\nAdministrative access should be narrowed to approved targets, approved protocols, and clear operational justification."
+  },
+  {
+    "chunk_id": "chunk_0189",
+    "source_file": "07_target_security_intent.md",
+    "section_title": "MGMT_SEGMENT",
+    "chunk_type": "target_intent",
+    "entities": [],
+    "zones": [
+      "MGMT",
+      "ADMIN"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### MGMT_SEGMENT\nThis zone should become the controlled management plane for infrastructure administration.\nIts future policy should be explicit and management-only in nature."
+  },
+  {
+    "chunk_id": "chunk_0190",
+    "source_file": "07_target_security_intent.md",
+    "section_title": "EMPLOYEE_SEGMENT",
+    "chunk_type": "target_intent",
+    "entities": [],
+    "zones": [
+      "EMPLOYEE"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### EMPLOYEE_SEGMENT\nThis zone should represent normal internal user systems.\nIts future policy should allow only the minimum required access to internal services and block unnecessary direct access to trusted infrastructure."
+  },
+  {
+    "chunk_id": "chunk_0191",
+    "source_file": "07_target_security_intent.md",
+    "section_title": "GUEST_SEGMENT",
+    "chunk_type": "target_intent",
+    "entities": [],
+    "zones": [
+      "GUEST"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### GUEST_SEGMENT\nThis zone should remain highly restricted and isolated.\nIt should not have direct access to trusted internal services."
+  },
+  {
+    "chunk_id": "chunk_0192",
+    "source_file": "07_target_security_intent.md",
+    "section_title": "WAN",
+    "chunk_type": "target_intent",
+    "entities": [],
+    "zones": [
+      "WAN"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "### WAN\nInbound exposure from WAN should remain blocked by default.\nAny future WAN-facing access should require explicit justification and tight security controls.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0193",
+    "source_file": "07_target_security_intent.md",
+    "section_title": "3. Identity and Trust Intent",
+    "chunk_type": "target_intent",
+    "entities": [
+      "Keycloak"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## 3. Identity and Trust Intent\n\nIdentity-related communication should be treated as critical infrastructure traffic, not generic internal communication.\n\nThe final model should ensure that:\n- application systems only reach identity services when necessary,\n- identity services only reach core infrastructure when required,\n- and trust relationships are minimized rather than implied by broad zone-level allow rules.\n\nKey identity dependencies such as Keycloak, Active Directory, LDAP federation, DNS, and time-related services should remain functional, but should not result in unnecessary reachability beyond their real operational need.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0194",
+    "source_file": "07_target_security_intent.md",
+    "section_title": "4. Database and Secret Access Intent",
+    "chunk_type": "target_intent",
+    "entities": [
+      "APP01",
+      "APP02",
+      "DB01",
+      "Vault",
+      "Internal API"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## 4. Database and Secret Access Intent\n\nDatabase access should be tightly restricted to the systems that truly require it.\n\nThe final model should ensure that:\n- APP01 only reaches the portal-side database functions it needs,\n- APP02 only reaches the internal audit-side database functions it needs,\n- the Internal API only reaches the internal audit-side database functions it needs,\n- and Vault access is limited to the systems and functions that actually require secret retrieval.\n\nBroad access to DB01 as an entire zone destination should not remain in the final design.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0195",
+    "source_file": "07_target_security_intent.md",
+    "section_title": "5. Proxy and Outbound Access Intent",
+    "chunk_type": "target_intent",
+    "entities": [
+      "PROXY01"
+    ],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## 5. Proxy and Outbound Access Intent\n\nOutbound Internet access should remain controlled through PROXY01.\n\nThe final model should avoid direct unrestricted Internet egress from internal systems.\nSystems that require outbound access should use only the designated proxy path and only where there is an actual operational need.\n\nBroad internal access to the entire DMZ should not remain part of the final baseline.\nCommunication should be narrowed to the exact proxy-related path required.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0196",
+    "source_file": "07_target_security_intent.md",
+    "section_title": "6. Administrative Access Intent",
+    "chunk_type": "target_intent",
+    "entities": [],
+    "zones": [
+      "ADMIN"
+    ],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## 6. Administrative Access Intent\n\nAdministrative access should be privileged, controlled, and auditable.\n\nThe final model should avoid leaving the admin workstation with unrestricted any-to-any reachability.\nInstead, administrative paths should be based on:\n- approved targets,\n- approved management protocols,\n- and clearly justified administrative tasks.\n\nThis is especially important because ADMIN currently holds one of the broadest trust positions in the environment.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0197",
+    "source_file": "07_target_security_intent.md",
+    "section_title": "7. Build-Phase vs Final-State Intent",
+    "chunk_type": "target_intent",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## 7. Build-Phase vs Final-State Intent\n\nThe current model includes temporary broad permissions to support integration, troubleshooting, and staged implementation.\nThese should not be interpreted as permanent design decisions.\n\nThe final intended state is:\n- fewer broad zone-to-zone permissions,\n- more asset-specific communication,\n- more service-specific communication,\n- and a clearer distinction between operational necessity and convenience.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0198",
+    "source_file": "07_target_security_intent.md",
+    "section_title": "8. Auditable Baseline Intent",
+    "chunk_type": "target_intent",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## 8. Auditable Baseline Intent\n\nThe long-term target is not only a working environment, but an auditable environment.\n\nThat means the final network model should be easier to explain in terms of:\n- why a flow exists,\n- why a flow is allowed,\n- what service depends on it,\n- what risk is introduced if it remains too broad,\n- and how the design aligns with least privilege and realistic enterprise control expectations.\n\nThe future AI agent should eventually be able to reason about this target posture, compare it with the current state, and help identify where the environment still needs tightening.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0199",
+    "source_file": "07_target_security_intent.md",
+    "section_title": "9. Modeling Rule for the AI Agent",
+    "chunk_type": "target_intent",
+    "entities": [],
+    "zones": [],
+    "confidence_tags": [
+      "confirmed"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## 9. Modeling Rule for the AI Agent\n\nThe AI agent should not assume that currently allowed communication is automatically intended communication.\n\nInstead, the AI agent should interpret the model using three layers:\n1. current observed access,\n2. confirmed required operational access,\n3. target intended least-privilege access.\n\nThis distinction is essential for meaningful security reasoning.\n\n---"
+  },
+  {
+    "chunk_id": "chunk_0200",
+    "source_file": "07_target_security_intent.md",
+    "section_title": "Notes",
+    "chunk_type": "target_intent",
+    "entities": [],
+    "zones": [
+      "WAN"
+    ],
+    "confidence_tags": [
+      "open_question"
+    ],
+    "flow_source": null,
+    "flow_destination": null,
+    "flow_assets": [],
+    "text": "## Notes\n- This document defines the intended security direction of the network model, not only its current implementation state.\n- It should be used together with:\n  - required flows,\n  - blocked or unnecessary flows,\n  - and open questions / assumptions.\n- The future AI agent should use this file to understand the difference between temporary build-phase allowances and the intended hardened architecture."
+  }
+]

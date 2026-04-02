@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Network Domain Agent</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .page {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 1.9rem;
+            color: #38bdf8;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            margin-bottom: 28px;
+        }
+
+        .panel {
+            background: #111827;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #cbd5e1;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        select, input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            background: #1e293b;
+            color: #e2e8f0;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        select:focus, input[type="text"]:focus, input[type="number"]:focus {
+            border-color: #38bdf8;
+        }
+
+        .agent-info {
+            margin-top: 14px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .agent-title {
+            color: #38bdf8;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .agent-description {
+            color: #cbd5e1;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .meta-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .pill {
+            background: #334155;
+            color: #e2e8f0;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+        }
+
+        .controls-row {
+            display: grid;
+            grid-template-columns: 1fr 140px;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 14px 22px;
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        button:hover { background: #0284c7; }
+
+        button:disabled {
+            background: #475569;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            color: #94a3b8;
+            font-style: italic;
+            padding: 20px 0;
+            display: none;
+        }
+
+        .answer-box {
+            display: none;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            line-height: 1.7;
+        }
+
+        .answer-header {
+            margin-bottom: 14px;
+        }
+
+        .answer-agent {
+            color: #38bdf8;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .answer-desc {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 14px 0 16px 0;
+        }
+
+        .tag {
+            background: #0ea5e9;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .formatted-answer {
+            color: #e2e8f0;
+            line-height: 1.8;
+            white-space: normal;
+            word-break: break-word;
+        }
+
+        .formatted-answer p {
+            margin-bottom: 14px;
+        }
+
+        .formatted-answer h2,
+        .formatted-answer h3,
+        .formatted-answer h4 {
+            color: #38bdf8;
+            margin-top: 18px;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .formatted-answer strong {
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        .compare-results,
+        .analysis-results {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .compare-grid,
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .compare-card,
+        .analysis-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 18px;
+            line-height: 1.7;
+            min-height: 100%;
+        }
+
+        .compare-card h3,
+        .analysis-card h3 {
+            color: #38bdf8;
+            margin-bottom: 6px;
+            font-size: 1rem;
+        }
+
+        .compare-card .desc {
+            color: #94a3b8;
+            font-size: 0.88rem;
+            margin-bottom: 12px;
+        }
+
+        .analysis-summary {
+            margin-bottom: 16px;
+        }
+
+        .summary-box {
+            background: #111827;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .summary-title {
+            color: #38bdf8;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .subsection {
+            margin-top: 14px;
+        }
+
+        .subsection-title {
+            color: #cbd5e1;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .kv-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .kv-pill {
+            background: #334155;
+            color: #e2e8f0;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+        }
+
+        .result-item {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+
+        .result-topline {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .rank-badge {
+            background: #0ea5e9;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .score-badge {
+            background: #1d4ed8;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .chunk-type-badge {
+            background: #475569;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .result-line {
+            color: #cbd5e1;
+            margin-bottom: 6px;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+
+        .result-line strong {
+            color: #e2e8f0;
+        }
+
+        .diagnostic-box {
+            background: #111827;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .diagnostic-box ul {
+            margin-left: 18px;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+
+        .diagnostic-box li {
+            margin-bottom: 6px;
+        }
+
+        @media (max-width: 980px) {
+            .compare-grid,
+            .analysis-grid,
+            .controls-row {
+                grid-template-columns: 1fr;
+            }
+
+            .button-row {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <h1>AI Network Domain Agent</h1>
+        <p class="subtitle">Environment-aware reasoning over a documented homelab network domain</p>
+
+        <div class="panel">
+            <label for="agentSelect">Select Agent Version</label>
+            <select id="agentSelect"></select>
+
+            <div id="agentInfo" class="agent-info">
+                <div class="agent-title">Loading agent details...</div>
+                <div class="agent-description"></div>
+                <div class="meta-list" id="agentMeta"></div>
+            </div>
+
+            <div class="controls-row">
+                <div>
+                    <label for="question">Question</label>
+                    <input type="text" id="question" placeholder="Ask a network question..." />
+                </div>
+                <div>
+                    <label for="topK">Top K</label>
+                    <input type="number" id="topK" value="10" min="1" max="30" />
+                </div>
+            </div>
+
+            <div class="button-row">
+                <button id="askBtn" onclick="askQuestion()">Ask</button>
+                <button id="compareBtn" onclick="compareQuestion()">Compare</button>
+                <button id="analyzeBtn" onclick="analyzeRetrieval()">Analyze Retrieval</button>
+            </div>
+        </div>
+
+        <div id="loading" class="loading">Thinking...</div>
+        <div id="answerBox" class="answer-box"></div>
+
+        <div id="compareResults" class="compare-results">
+            <div id="compareGrid" class="compare-grid"></div>
+        </div>
+
+        <div id="analysisResults" class="analysis-results">
+            <div id="analysisSummary" class="analysis-summary"></div>
+            <div id="analysisDiagnostics"></div>
+            <div id="analysisGrid" class="analysis-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        let agents = [];
+
+        async function loadAgents() {
+            const res = await fetch('/agents');
+            const data = await res.json();
+            agents = data.agents;
+
+            const select = document.getElementById('agentSelect');
+            select.innerHTML = '';
+
+            agents.forEach(agent => {
+                const option = document.createElement('option');
+                option.value = agent.agent_id;
+                option.textContent = agent.label;
+                if (agent.agent_id === 'v8') {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+
+            renderAgentInfo(select.value);
+
+            select.addEventListener('change', function () {
+                renderAgentInfo(this.value);
+            });
+        }
+
+        function renderAgentInfo(agentId) {
+            const agent = agents.find(a => a.agent_id === agentId);
+            if (!agent) return;
+
+            document.querySelector('#agentInfo .agent-title').textContent = agent.label;
+            document.querySelector('#agentInfo .agent-description').textContent = agent.description;
+
+            const meta = document.getElementById('agentMeta');
+            meta.innerHTML = '';
+
+            (agent.strengths || []).forEach(item => {
+                const span = document.createElement('span');
+                span.className = 'pill';
+                span.textContent = 'Strength: ' + item;
+                meta.appendChild(span);
+            });
+
+            (agent.limitations || []).forEach(item => {
+                const span = document.createElement('span');
+                span.className = 'pill';
+                span.textContent = 'Limit: ' + item;
+                meta.appendChild(span);
+            });
+        }
+
+        function renderIntentTags(intents) {
+            let tagsHtml = '<div class="meta">';
+            (intents || []).forEach(intent => {
+                tagsHtml += '<span class="tag">' + escapeHtml(intent) + '</span>';
+            });
+            tagsHtml += '</div>';
+            return tagsHtml;
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function formatAnswerText(text) {
+            let safe = escapeHtml(text || '');
+
+            safe = safe.replace(/^###\s+(.*)$/gm, '<h4>$1</h4>');
+            safe = safe.replace(/^##\s+(.*)$/gm, '<h3>$1</h3>');
+            safe = safe.replace(/^#\s+(.*)$/gm, '<h2>$1</h2>');
+
+            safe = safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            safe = safe.replace(/\n\n+/g, '</p><p>');
+            safe = '<p>' + safe + '</p>';
+
+            safe = safe.replace(/\n/g, '<br>');
+
+            safe = safe.replace(/<p><\/p>/g, '');
+            safe = safe.replace(/<p><br>/g, '<p>');
+            safe = safe.replace(/<br><\/p>/g, '</p>');
+
+            return safe;
+        }
+
+        function renderListPills(items) {
+            if (!items || items.length === 0) {
+                return '<div class="kv-pill">None</div>';
+            }
+
+            let html = '<div class="kv-list">';
+            items.forEach(item => {
+                html += '<span class="kv-pill">' + escapeHtml(item) + '</span>';
+            });
+            html += '</div>';
+            return html;
+        }
+
+        function renderTypePills(types) {
+            const entries = Object.entries(types || {});
+            if (entries.length === 0) {
+                return '<div class="kv-pill">No types</div>';
+            }
+
+            let html = '<div class="kv-list">';
+            entries.forEach(([key, value]) => {
+                html += '<span class="kv-pill">' + escapeHtml(key) + ': ' + escapeHtml(value) + '</span>';
+            });
+            html += '</div>';
+            return html;
+        }
+
+        function renderDiagnostics(items) {
+            const box = document.getElementById('analysisDiagnostics');
+            box.innerHTML = '';
+
+            (items || []).forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'diagnostic-box';
+
+                let notesHtml = '';
+                if (item.notes && item.notes.length > 0) {
+                    notesHtml = '<ul>' + item.notes.map(n => '<li>' + escapeHtml(n) + '</li>').join('') + '</ul>';
+                } else {
+                    notesHtml = '<div class="kv-pill">No warnings detected</div>';
+                }
+
+                div.innerHTML =
+                    '<div class="summary-title">' + escapeHtml(item.version_label) + ' diagnostics</div>' +
+                    notesHtml;
+
+                box.appendChild(div);
+            });
+        }
+
+        function renderAnalysisSummary(data) {
+            const summary = document.getElementById('analysisSummary');
+            summary.innerHTML =
+                '<div class="summary-box">' +
+                    '<div class="summary-title">Retrieval Analysis Summary</div>' +
+                    '<div class="result-line"><strong>Question:</strong> ' + escapeHtml(data.question) + '</div>' +
+                    '<div class="result-line"><strong>Top K:</strong> ' + escapeHtml(data.top_k) + '</div>' +
+                '</div>';
+        }
+
+        function renderAnalysisCards(analyses) {
+            const grid = document.getElementById('analysisGrid');
+            grid.innerHTML = '';
+
+            (analyses || []).forEach(analysis => {
+                const card = document.createElement('div');
+                card.className = 'analysis-card';
+
+                let resultsHtml = '';
+                (analysis.results || []).forEach(result => {
+                    resultsHtml +=
+                        '<div class="result-item">' +
+                            '<div class="result-topline">' +
+                                '<span class="rank-badge">#' + escapeHtml(result.rank) + '</span>' +
+                                '<span class="score-badge">score=' + escapeHtml(result.score) + '</span>' +
+                                '<span class="chunk-type-badge">' + escapeHtml(result.chunk_type) + '</span>' +
+                            '</div>' +
+                            '<div class="result-line"><strong>chunk_id:</strong> ' + escapeHtml(result.chunk_id) + '</div>' +
+                            '<div class="result-line"><strong>source_file:</strong> ' + escapeHtml(result.source_file) + '</div>' +
+                            '<div class="result-line"><strong>section_title:</strong> ' + escapeHtml(result.section_title) + '</div>' +
+                            '<div class="result-line"><strong>entities:</strong> ' + escapeHtml((result.entities || []).join(', ')) + '</div>' +
+                            '<div class="result-line"><strong>zones:</strong> ' + escapeHtml((result.zones || []).join(', ')) + '</div>' +
+                            '<div class="result-line"><strong>flow_assets:</strong> ' + escapeHtml((result.flow_assets || []).join(', ')) + '</div>' +
+                            '<div class="result-line"><strong>confidence_tags:</strong> ' + escapeHtml((result.confidence_tags || []).join(', ')) + '</div>' +
+                            '<div class="result-line"><strong>preview:</strong> ' + escapeHtml(result.text_preview) + '</div>' +
+                        '</div>';
+                });
+
+                card.innerHTML =
+                    '<h3>' + escapeHtml(analysis.version_label) + '</h3>' +
+
+                    '<div class="subsection">' +
+                        '<div class="subsection-title">Detected intents</div>' +
+                        renderListPills(analysis.intents) +
+                    '</div>' +
+
+                    '<div class="subsection">' +
+                        '<div class="subsection-title">Focus: zones</div>' +
+                        renderListPills(analysis.focus.zones) +
+                    '</div>' +
+
+                    '<div class="subsection">' +
+                        '<div class="subsection-title">Focus: direct assets</div>' +
+                        renderListPills(analysis.focus.direct_assets) +
+                    '</div>' +
+
+                    '<div class="subsection">' +
+                        '<div class="subsection-title">Focus: zone-expanded assets</div>' +
+                        renderListPills(analysis.focus.zone_assets) +
+                    '</div>' +
+
+                    '<div class="subsection">' +
+                        '<div class="subsection-title">Focus: dependency-expanded assets</div>' +
+                        renderListPills(analysis.focus.dep_assets) +
+                    '</div>' +
+
+                    '<div class="subsection">' +
+                        '<div class="subsection-title">Focus: all assets</div>' +
+                        renderListPills(analysis.focus.all_assets) +
+                    '</div>' +
+
+                    '<div class="subsection">' +
+                        '<div class="subsection-title">Type distribution</div>' +
+                        renderTypePills(analysis.summary.type_counts) +
+                    '</div>' +
+
+                    '<div class="subsection">' +
+                        '<div class="subsection-title">Summary flags</div>' +
+                        '<div class="kv-list">' +
+                            '<span class="kv-pill">results=' + escapeHtml(analysis.summary.result_count) + '</span>' +
+                            '<span class="kv-pill">low_value=' + escapeHtml(analysis.summary.low_value_count) + '</span>' +
+                            '<span class="kv-pill">port_matrix=' + escapeHtml(analysis.summary.has_port_matrix) + '</span>' +
+                            '<span class="kv-pill">flows=' + escapeHtml(analysis.summary.has_flows) + '</span>' +
+                            '<span class="kv-pill">blocked_flows=' + escapeHtml(analysis.summary.has_blocked_flows) + '</span>' +
+                            '<span class="kv-pill">open_questions=' + escapeHtml(analysis.summary.has_open_questions) + '</span>' +
+                            '<span class="kv-pill">target_intent=' + escapeHtml(analysis.summary.has_target_intent) + '</span>' +
+                            '<span class="kv-pill">dependencies=' + escapeHtml(analysis.summary.has_dependencies) + '</span>' +
+                        '</div>' +
+                    '</div>' +
+
+                    '<div class="subsection">' +
+                        '<div class="subsection-title">Top results</div>' +
+                        resultsHtml +
+                    '</div>';
+
+                grid.appendChild(card);
+            });
+        }
+
+        document.getElementById('question').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') askQuestion();
+        });
+
+        async function askQuestion() {
+            const question = document.getElementById('question').value.trim();
+            const agentId = document.getElementById('agentSelect').value;
+
+            if (!question) return;
+
+            const askBtn = document.getElementById('askBtn');
+            const compareBtn = document.getElementById('compareBtn');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const loading = document.getElementById('loading');
+            const answerBox = document.getElementById('answerBox');
+            const compareResults = document.getElementById('compareResults');
+            const analysisResults = document.getElementById('analysisResults');
+
+            askBtn.disabled = true;
+            compareBtn.disabled = true;
+            analyzeBtn.disabled = true;
+            loading.style.display = 'block';
+            loading.textContent = 'Thinking...';
+            answerBox.style.display = 'none';
+            compareResults.style.display = 'none';
+            analysisResults.style.display = 'none';
+
+            try {
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question: question,
+                        agent_id: agentId
+                    })
+                });
+
+                const data = await response.json();
+
+                answerBox.innerHTML =
+                    '<div class="answer-header">' +
+                        '<div class="answer-agent">' + escapeHtml(data.agent_label) + '</div>' +
+                        '<div class="answer-desc">' + escapeHtml(data.agent_description) + '</div>' +
+                    '</div>' +
+                    renderIntentTags(data.intents) +
+                    '<div class="formatted-answer">' + formatAnswerText(data.answer) + '</div>';
+
+                answerBox.style.display = 'block';
+
+            } catch (error) {
+                answerBox.innerHTML = '<div style="color:#f87171;">Error: ' + escapeHtml(error.message) + '</div>';
+                answerBox.style.display = 'block';
+            }
+
+            askBtn.disabled = false;
+            compareBtn.disabled = false;
+            analyzeBtn.disabled = false;
+            loading.style.display = 'none';
+        }
+
+        async function compareQuestion() {
+            const question = document.getElementById('question').value.trim();
+            if (!question) return;
+
+            const askBtn = document.getElementById('askBtn');
+            const compareBtn = document.getElementById('compareBtn');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const loading = document.getElementById('loading');
+            const answerBox = document.getElementById('answerBox');
+            const compareResults = document.getElementById('compareResults');
+            const compareGrid = document.getElementById('compareGrid');
+            const analysisResults = document.getElementById('analysisResults');
+
+            askBtn.disabled = true;
+            compareBtn.disabled = true;
+            analyzeBtn.disabled = true;
+            loading.style.display = 'block';
+            loading.textContent = 'Comparing agents...';
+            answerBox.style.display = 'none';
+            compareResults.style.display = 'none';
+            analysisResults.style.display = 'none';
+            compareGrid.innerHTML = '';
+
+            try {
+                const agentIds = agents.map(a => a.agent_id);
+
+                const response = await fetch('/compare', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question: question,
+                        agent_ids: agentIds
+                    })
+                });
+
+                const data = await response.json();
+
+                data.results.forEach(result => {
+                    const card = document.createElement('div');
+                    card.className = 'compare-card';
+                    card.innerHTML =
+                        '<h3>' + escapeHtml(result.agent_label) + '</h3>' +
+                        '<div class="desc">' + escapeHtml(result.agent_description) + '</div>' +
+                        renderIntentTags(result.intents) +
+                        '<div class="formatted-answer">' + formatAnswerText(result.answer) + '</div>';
+
+                    compareGrid.appendChild(card);
+                });
+
+                compareResults.style.display = 'block';
+
+            } catch (error) {
+                answerBox.innerHTML = '<div style="color:#f87171;">Error: ' + escapeHtml(error.message) + '</div>';
+                answerBox.style.display = 'block';
+            }
+
+            askBtn.disabled = false;
+            compareBtn.disabled = false;
+            analyzeBtn.disabled = false;
+            loading.style.display = 'none';
+            loading.textContent = 'Thinking...';
+        }
+
+        async function analyzeRetrieval() {
+            const question = document.getElementById('question').value.trim();
+            const topK = parseInt(document.getElementById('topK').value || '10', 10);
+
+            if (!question) return;
+
+            const askBtn = document.getElementById('askBtn');
+            const compareBtn = document.getElementById('compareBtn');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const loading = document.getElementById('loading');
+            const answerBox = document.getElementById('answerBox');
+            const compareResults = document.getElementById('compareResults');
+            const analysisResults = document.getElementById('analysisResults');
+
+            askBtn.disabled = true;
+            compareBtn.disabled = true;
+            analyzeBtn.disabled = true;
+            loading.style.display = 'block';
+            loading.textContent = 'Analyzing retrieval...';
+            answerBox.style.display = 'none';
+            compareResults.style.display = 'none';
+            analysisResults.style.display = 'none';
+
+            try {
+                const response = await fetch('/analyze-retrieval', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question: question,
+                        top_k: topK
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                renderAnalysisSummary(data);
+                renderDiagnostics(data.diagnostics || []);
+                renderAnalysisCards(data.analyses || []);
+                analysisResults.style.display = 'block';
+
+            } catch (error) {
+                answerBox.innerHTML = '<div style="color:#f87171;">Error: ' + escapeHtml(error.message) + '</div>';
+                answerBox.style.display = 'block';
+            }
+
+            askBtn.disabled = false;
+            compareBtn.disabled = false;
+            analyzeBtn.disabled = false;
+            loading.style.display = 'none';
+            loading.textContent = 'Thinking...';
+        }
+
+        loadAgents();
+    </script>
+</body>
+</html>

@@ -1,0 +1,617 @@
+model:
+  name: "Network Model v1"
+  scope: "Homelab network domain"
+  status: "active"
+  notes:
+    - "This YAML is the structured version of the network documentation."
+    - "It is intended to support future AI agent reasoning, retrieval, API integration, and policy analysis."
+    - "It does not replace the markdown files. It summarizes them in structured form."
+
+zones:
+  - name: "WAN"
+    purpose: "External connectivity through pfSense"
+    subnet: null
+    gateway: null
+    assets:
+      - "Firewall01"
+
+  - name: "LAN / DATA"
+    purpose: "Core internal infrastructure"
+    subnet: "192.168.128.0/24"
+    gateway: "192.168.128.1"
+    assets:
+      - "DC01-CYBERAUDIT"
+      - "DB01"
+
+  - name: "APP_ZONE"
+    purpose: "Main application servers"
+    subnet: "192.168.20.0/24"
+    gateway: "192.168.20.1"
+    assets:
+      - "APP01"
+      - "APP02"
+
+  - name: "DMZ_ZONE"
+    purpose: "Proxy services and controlled outbound access"
+    subnet: "192.168.10.0/24"
+    gateway: "192.168.10.1"
+    assets:
+      - "PROXY01"
+
+  - name: "SERVICE_ZONE"
+    purpose: "Identity and access management services"
+    subnet: "192.168.30.0/24"
+    gateway: "192.168.30.1"
+    assets:
+      - "IAM01"
+
+  - name: "MGMT"
+    purpose: "Infrastructure management network"
+    subnet: "192.168.50.0/24"
+    gateway: "192.168.50.1"
+    assets:
+      - "ESXi"
+      - "Switch Management"
+
+  - name: "ADMIN"
+    purpose: "Administrative workstations and privileged access devices"
+    subnet: "192.168.60.0/24"
+    gateway: "192.168.60.1"
+    assets:
+      - "Admin laptop"
+
+  - name: "EMPLOYEE"
+    purpose: "Internal employee devices and normal workstation-style systems"
+    subnet: "192.168.70.0/24"
+    gateway: "192.168.70.1"
+    assets:
+      - "Employee devices"
+
+  - name: "GUEST"
+    purpose: "Guest or untrusted access"
+    subnet: "192.168.80.0/24"
+    gateway: "192.168.80.1"
+    assets:
+      - "Guest devices"
+
+assets:
+  - name: "Firewall01"
+    zone: "WAN"
+    type: "firewall"
+    services:
+      - "network_firewalling"
+      - "inter_zone_routing"
+      - "default_gateway"
+    purpose: "Central firewall and routing point for the segmented environment"
+
+  - name: "DC01-CYBERAUDIT"
+    zone: "LAN / DATA"
+    type: "domain_controller"
+    services:
+      - "active_directory"
+      - "internal_dns"
+      - "time_service"
+    purpose: "Internal directory foundation for the cyberaudit.local domain and internal name resolution"
+
+  - name: "DB01"
+    zone: "LAN / DATA"
+    type: "database_and_secrets_host"
+    services:
+      - "mariadb"
+      - "vault"
+    purpose: "Hosts the MariaDB layer for SAAMS, including logically separated portal-side and internal audit-side databases, and also hosts Vault"
+    hosted_components:
+      - "saams_portal_db"
+      - "audit_system_db"
+      - "vault"
+
+  - name: "APP01"
+    zone: "APP_ZONE"
+    type: "application_server"
+    services:
+      - "customer_facing_web_portal"
+      - "nginx_reverse_proxy"
+      - "tls_termination"
+    purpose: "Hosts the customer-facing portal and the Nginx reverse proxy layer that listens on HTTPS and forwards traffic to the local portal process"
+
+  - name: "APP02"
+    zone: "APP_ZONE"
+    type: "application_server"
+    services:
+      - "internal_employee_audit_application"
+    purpose: "Hosts the internal C# employee audit application used for the internal workflow"
+
+  - name: "IAM01"
+    zone: "SERVICE_ZONE"
+    type: "identity_and_api_server"
+    services:
+      - "keycloak"
+      - "internal_api"
+    purpose: "Central identity and access management platform for customer and internal authentication, and host of the internal API"
+
+  - name: "PROXY01"
+    zone: "DMZ_ZONE"
+    type: "proxy_server"
+    services:
+      - "forward_proxy"
+      - "controlled_outbound_access"
+    purpose: "Dedicated egress-related system for structured outbound Internet access"
+
+  - name: "ESXi"
+    zone: "MGMT"
+    type: "virtualization_host"
+    services:
+      - "virtualization_management"
+    purpose: "Hosts the lab virtual machines and supports infrastructure management"
+
+  - name: "Switch Management"
+    zone: "MGMT"
+    type: "network_management_interface"
+    services:
+      - "switch_administration"
+    purpose: "Management interface for the Cisco switch infrastructure"
+
+  - name: "Admin laptop"
+    zone: "ADMIN"
+    type: "administrative_workstation"
+    services:
+      - "administrative_access_workstation"
+    purpose: "Used for privileged administrative access to the environment"
+
+dependencies:
+  - asset: "DB01"
+    depends_on:
+      - "DC01-CYBERAUDIT"
+      - "PROXY01"
+
+  - asset: "APP01"
+    depends_on:
+      - "IAM01"
+      - "DB01"
+      - "Vault on DB01"
+      - "Internal API on IAM01"
+      - "PROXY01"
+
+  - asset: "APP02"
+    depends_on:
+      - "IAM01"
+      - "DB01"
+      - "Vault on DB01"
+      - "PROXY01"
+
+  - asset: "IAM01"
+    depends_on:
+      - "DC01-CYBERAUDIT"
+      - "DB01"
+      - "Vault on DB01"
+      - "PROXY01"
+
+  - asset: "DC01-CYBERAUDIT"
+    depends_on:
+      - "PROXY01"
+
+  - asset: "PROXY01"
+    depends_on:
+      - "Firewall01"
+
+required_flows:
+  - source: "APP01"
+    destination: "IAM01"
+    purpose: "Customer authentication through Keycloak OIDC"
+    required_for_operation: true
+    current_state: "broad_inter_zone_connectivity_exists"
+    hardening_note: "Should later be restricted to only the specific ports and protocols required for Keycloak-based authentication"
+
+  - source: "APP01"
+    destination: "DB01"
+    purpose: "Portal-side database access"
+    required_for_operation: true
+    current_state: "broad_inter_zone_connectivity_exists"
+    hardening_note: "Should later be restricted to only the database communication required by APP01"
+
+  - source: "APP01"
+    destination: "Vault on DB01"
+    purpose: "Retrieve database credentials and client certificates"
+    required_for_operation: true
+    current_state: "broad_inter_zone_connectivity_exists"
+    hardening_note: "Should later be restricted to only the specific Vault-related access required by APP01"
+
+  - source: "APP01"
+    destination: "Internal API on IAM01"
+    purpose: "Create internal requests, retrieve status updates, and download final reports"
+    required_for_operation: true
+    current_state: "broad_inter_zone_connectivity_exists"
+    hardening_note: "Should later be restricted to only the API endpoint access required by the portal"
+
+  - source: "APP02"
+    destination: "IAM01"
+    purpose: "Employee authentication through Keycloak Device Flow with MFA"
+    required_for_operation: true
+    current_state: "broad_inter_zone_connectivity_exists"
+    hardening_note: "Should later be restricted to only the specific authentication-related communication required by the internal employee application"
+
+  - source: "APP02"
+    destination: "DB01"
+    purpose: "Direct access to audit_system_db"
+    required_for_operation: true
+    current_state: "broad_inter_zone_connectivity_exists"
+    hardening_note: "Should later be restricted to only the specific database communication required by APP02"
+
+  - source: "APP02"
+    destination: "Vault on DB01"
+    purpose: "Retrieve database credentials, certificates, and Keycloak-related configuration"
+    required_for_operation: true
+    current_state: "broad_inter_zone_connectivity_exists"
+    hardening_note: "Should later be restricted to only the specific Vault-related access required by APP02"
+
+  - source: "IAM01"
+    destination: "DC01-CYBERAUDIT"
+    purpose: "LDAP federation, DNS, and time-related dependency"
+    required_for_operation: true
+    current_state: "broad_inter_zone_connectivity_exists"
+    hardening_note: "Should later be restricted to only the exact identity and infrastructure services required"
+
+  - source: "IAM01"
+    destination: "DB01"
+    purpose: "Internal API access to audit_system_db and Vault"
+    required_for_operation: true
+    current_state: "broad_inter_zone_connectivity_exists"
+    hardening_note: "Should later be restricted to only the specific database and Vault communication required"
+
+  - source: "APP01"
+    destination: "PROXY01"
+    purpose: "Controlled outbound Internet egress"
+    required_for_operation: true
+    current_state: "broad_access_to_dmz_exists"
+    hardening_note: "Should later be restricted to only proxy-related communication"
+
+  - source: "APP02"
+    destination: "PROXY01"
+    purpose: "Controlled outbound Internet egress"
+    required_for_operation: true
+    current_state: "broad_access_to_dmz_exists"
+    hardening_note: "Should later be restricted to only proxy-related communication"
+
+  - source: "IAM01"
+    destination: "PROXY01"
+    purpose: "Controlled outbound Internet egress"
+    required_for_operation: true
+    current_state: "broad_access_to_dmz_exists"
+    hardening_note: "Should later be restricted to only proxy-related communication"
+
+  - source: "DB01"
+    destination: "PROXY01"
+    purpose: "Controlled outbound Internet egress"
+    required_for_operation: true
+    current_state: "broad_access_to_dmz_exists"
+    hardening_note: "Should later be restricted to only proxy-related communication"
+
+  - source: "DC01-CYBERAUDIT"
+    destination: "PROXY01"
+    purpose: "Controlled outbound Internet egress"
+    required_for_operation: true
+    current_state: "broad_access_to_dmz_exists"
+    hardening_note: "Should later be restricted to only proxy-related communication"
+
+  - source: "Admin laptop"
+    destination: "target systems"
+    purpose: "Privileged administration and management access"
+    required_for_operation: true
+    current_state: "admin_laptop_any_to_any"
+    hardening_note: "Should later be narrowed to management-specific access only"
+
+port_protocol_matrix:
+  - source: "Client / browser"
+    destination: "APP01"
+    service: "nginx_reverse_proxy"
+    protocol: "HTTPS"
+    port: 443
+    direction: "inbound_to_APP01"
+    purpose: "Customer-facing secure access to the portal"
+    status: "confirmed"
+
+  - source: "Nginx on APP01"
+    destination: "Local portal process on APP01"
+    service: "reverse_proxy_forwarding"
+    protocol: "HTTPS"
+    port: 3000
+    direction: "local_internal_flow"
+    purpose: "Forward portal traffic from Nginx to the local Express application"
+    status: "confirmed"
+
+  - source: "APP01"
+    destination: "IAM01"
+    service: "Keycloak OIDC"
+    protocol: "HTTP"
+    port: 8080
+    direction: "outbound_from_APP01"
+    purpose: "Customer authentication and OIDC interaction"
+    status: "confirmed"
+
+  - source: "APP01"
+    destination: "DB01"
+    service: "MariaDB (saams_portal_db)"
+    protocol: "MySQL over TLS / mTLS"
+    port: 3307
+    direction: "outbound_from_APP01"
+    purpose: "Portal-side database access"
+    status: "confirmed"
+
+  - source: "APP01"
+    destination: "Vault on DB01"
+    service: "Vault"
+    protocol: "HTTP"
+    port: 8200
+    direction: "outbound_from_APP01"
+    purpose: "Retrieve database credentials and client certificates"
+    status: "confirmed"
+
+  - source: "APP01"
+    destination: "Internal API on IAM01"
+    service: "Internal API"
+    protocol: "HTTP"
+    port: 9090
+    direction: "outbound_from_APP01"
+    purpose: "Create internal requests, retrieve status updates, and download reports"
+    status: "confirmed"
+
+  - source: "APP02"
+    destination: "IAM01"
+    service: "Keycloak Device Flow"
+    protocol: "HTTP"
+    port: 8080
+    direction: "outbound_from_APP02"
+    purpose: "Employee authentication through Device Flow and MFA"
+    status: "confirmed"
+
+  - source: "APP02"
+    destination: "DB01"
+    service: "MariaDB (audit_system_db)"
+    protocol: "MySQL over TLS / mTLS"
+    port: 3307
+    direction: "outbound_from_APP02"
+    purpose: "Internal audit workflow database access"
+    status: "confirmed"
+
+  - source: "APP02"
+    destination: "Vault on DB01"
+    service: "Vault"
+    protocol: "HTTP"
+    port: 8200
+    direction: "outbound_from_APP02"
+    purpose: "Retrieve database credentials, certificates, and Keycloak configuration"
+    status: "confirmed"
+
+  - source: "IAM01"
+    destination: "DB01"
+    service: "MariaDB (audit_system_db)"
+    protocol: "MySQL over TLS / mTLS"
+    port: 3307
+    direction: "outbound_from_IAM01"
+    purpose: "Internal API database access"
+    status: "confirmed"
+
+  - source: "IAM01"
+    destination: "Vault on DB01"
+    service: "Vault"
+    protocol: "HTTP"
+    port: 8200
+    direction: "outbound_from_IAM01"
+    purpose: "Retrieve database credentials and certificates for Internal API database access"
+    status: "confirmed"
+
+  - source: "IAM01"
+    destination: "DC01-CYBERAUDIT"
+    service: "DNS"
+    protocol: "UDP"
+    port: 53
+    direction: "outbound_from_IAM01"
+    purpose: "Internal name resolution"
+    status: "confirmed"
+
+  - source: "IAM01"
+    destination: "DC01-CYBERAUDIT"
+    service: "LDAP federation"
+    protocol: "TCP"
+    port: 389
+    direction: "outbound_from_IAM01"
+    purpose: "Active Directory federation for Keycloak"
+    status: "standard_default_declared_by_owner"
+
+  - source: "IAM01"
+    destination: "DC01-CYBERAUDIT"
+    service: "Time / NTP"
+    protocol: "UDP"
+    port: 123
+    direction: "outbound_from_IAM01"
+    purpose: "Time synchronization"
+    status: "standard_default_declared_by_owner"
+
+  - source: "APP01"
+    destination: "DC01-CYBERAUDIT"
+    service: "DNS"
+    protocol: "UDP"
+    port: 53
+    direction: "outbound_from_APP01"
+    purpose: "Internal name resolution"
+    status: "owner_confirmed_domain_joined_behavior"
+
+  - source: "APP01"
+    destination: "DC01-CYBERAUDIT"
+    service: "Time / NTP"
+    protocol: "UDP"
+    port: 123
+    direction: "outbound_from_APP01"
+    purpose: "Time synchronization"
+    status: "standard_default_declared_by_owner"
+
+  - source: "APP02"
+    destination: "DC01-CYBERAUDIT"
+    service: "DNS"
+    protocol: "UDP"
+    port: 53
+    direction: "outbound_from_APP02"
+    purpose: "Internal name resolution"
+    status: "owner_confirmed_domain_joined_behavior"
+
+  - source: "APP02"
+    destination: "DC01-CYBERAUDIT"
+    service: "Time / NTP"
+    protocol: "UDP"
+    port: 123
+    direction: "outbound_from_APP02"
+    purpose: "Time synchronization"
+    status: "standard_default_declared_by_owner"
+
+  - source: "DB01"
+    destination: "DC01-CYBERAUDIT"
+    service: "DNS"
+    protocol: "UDP"
+    port: 53
+    direction: "outbound_from_DB01"
+    purpose: "Internal name resolution"
+    status: "owner_confirmed_domain_joined_behavior"
+
+  - source: "DB01"
+    destination: "DC01-CYBERAUDIT"
+    service: "Time / NTP"
+    protocol: "UDP"
+    port: 123
+    direction: "outbound_from_DB01"
+    purpose: "Time synchronization"
+    status: "standard_default_declared_by_owner"
+
+  - source: "DC01-CYBERAUDIT"
+    destination: "PROXY01"
+    service: "Outbound proxy path"
+    protocol: "HTTP proxy"
+    port: 3128
+    direction: "outbound_from_DC01"
+    purpose: "Controlled Internet egress"
+    status: "confirmed"
+
+  - source: "DB01"
+    destination: "PROXY01"
+    service: "Outbound proxy path"
+    protocol: "HTTP proxy"
+    port: 3128
+    direction: "outbound_from_DB01"
+    purpose: "Controlled Internet egress"
+    status: "confirmed"
+
+  - source: "APP01"
+    destination: "PROXY01"
+    service: "Outbound proxy path"
+    protocol: "HTTP proxy"
+    port: 3128
+    direction: "outbound_from_APP01"
+    purpose: "Controlled Internet egress"
+    status: "confirmed"
+
+  - source: "APP02"
+    destination: "PROXY01"
+    service: "Outbound proxy path"
+    protocol: "HTTP proxy"
+    port: 3128
+    direction: "outbound_from_APP02"
+    purpose: "Controlled Internet egress"
+    status: "confirmed"
+
+  - source: "IAM01"
+    destination: "PROXY01"
+    service: "Outbound proxy path"
+    protocol: "HTTP proxy"
+    port: 3128
+    direction: "outbound_from_IAM01"
+    purpose: "Controlled Internet egress"
+    status: "confirmed"
+
+  - source: "Admin laptop"
+    destination: "Any destination"
+    service: "Administrative access"
+    protocol: "Broad open access"
+    port: "Any"
+    direction: "outbound_from_admin_laptop"
+    purpose: "Current privileged administration model"
+    status: "confirmed_current_firewall_state"
+
+blocked_or_unnecessary_flows:
+  - flow: "Broad LAN / DATA -> APP_ZONE access"
+    final_state_should_remain: false
+
+  - flow: "Broad LAN / DATA -> SERVICE_ZONE access"
+    final_state_should_remain: false
+
+  - flow: "Broad LAN / DATA -> DMZ_ZONE access"
+    final_state_should_remain: false
+
+  - flow: "Broad APP_ZONE -> LAN / DATA access"
+    final_state_should_remain: false
+
+  - flow: "Broad APP_ZONE -> SERVICE_ZONE access"
+    final_state_should_remain: false
+
+  - flow: "Broad APP_ZONE -> DMZ_ZONE access"
+    final_state_should_remain: false
+
+  - flow: "Broad SERVICE_ZONE -> LAN / DATA access"
+    final_state_should_remain: false
+
+  - flow: "Broad SERVICE_ZONE -> APP_ZONE access"
+    final_state_should_remain: false
+
+  - flow: "Broad SERVICE_ZONE -> DMZ_ZONE access"
+    final_state_should_remain: false
+
+  - flow: "Broad DMZ_ZONE -> internal destinations"
+    final_state_should_remain: false
+
+  - flow: "Admin laptop any-to-any access"
+    final_state_should_remain: false
+
+open_questions:
+  - "What is the final least-privilege model for MGMT_SEGMENT?"
+  - "What is the final least-privilege model for EMPLOYEE_SEGMENT?"
+  - "What is the final least-privilege model for GUEST_SEGMENT?"
+  - "Should any WAN-facing exposure be introduced later?"
+  - "What exact management protocols should remain allowed from Admin laptop?"
+
+target_security_intent:
+  general:
+    - "Move from broad build-phase connectivity to an auditable least-privilege model"
+    - "Reduce unnecessary trust between zones"
+    - "Allow only communication clearly justified by application, identity, management, or operational requirements"
+
+  zone_intent:
+    "LAN / DATA": "Highly trusted core infrastructure zone; should not be broadly reachable"
+    "APP_ZONE": "Business application systems only; no broad trust into infrastructure or identity services"
+    "SERVICE_ZONE": "Identity-related services only; communication should be tightly scoped"
+    "DMZ_ZONE": "Should remain narrow and controlled; not a broadly trusted transit area"
+    "ADMIN": "Privileged administration only; should not remain any-to-any"
+    "MGMT": "Controlled management plane for infrastructure administration"
+    "EMPLOYEE": "Normal internal user systems with minimum required access only"
+    "GUEST": "Highly restricted and isolated"
+    "WAN": "Inbound exposure should remain blocked by default"
+
+  identity_intent:
+    - "Identity-related communication should be treated as critical infrastructure traffic"
+    - "Trust relationships should be minimized rather than implied by broad allow rules"
+
+  database_and_secret_intent:
+    - "Database access should be tightly restricted to systems that truly require it"
+    - "Vault access should be limited to systems and functions that actually require secret retrieval"
+
+  proxy_and_egress_intent:
+    - "Outbound Internet access should remain controlled through PROXY01"
+    - "Broad internal access to the entire DMZ should not remain in the final baseline"
+
+  administrative_access_intent:
+    - "Administrative access should be privileged, controlled, and auditable"
+    - "Administrative paths should be based on approved targets, approved protocols, and clearly justified tasks"
+
+metadata:
+  confidence_model:
+    confirmed: "Directly confirmed through code, config, env, or packet capture"
+    owner_confirmed: "Confirmed directly by the owner"
+    standard_default_declared_by_owner: "Accepted for the model as a standard/default value declared by the owner"
+    open_question: "Still unresolved and should not be treated as final fact"
