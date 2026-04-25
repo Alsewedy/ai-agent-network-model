@@ -117,15 +117,48 @@ pipeline {
                 echo 'Code Quality stage finished. Ruff findings and SonarCloud dashboard should be reviewed in the hardening pass.'
             }
         }
-
         stage('Security') {
             steps {
-                echo '=== Security Stage: Placeholder / baseline only ==='
-                echo 'Security scanning has not been fully implemented yet.'
-                echo 'Planned improvement: add pip-audit for dependency vulnerabilities.'
-                echo 'Planned improvement: add Bandit for Python source-code security scanning.'
-                echo 'Planned improvement: add Trivy for Docker image/container scanning.'
-                echo 'This stage is currently non-blocking and only documents the planned security work.'
+                echo '=== Security Stage: Dependency, source-code, and container image scanning ==='
+                echo 'This stage runs in non-blocking mode so the full pipeline can continue during baseline hardening.'
+
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    sh '''
+                        . .venv/bin/activate
+
+                        echo "Installing Python security tools..."
+                        pip install pip-audit bandit
+
+                        echo "Running dependency vulnerability scan with pip-audit..."
+                        pip-audit -r requirements.txt
+                    '''
+                }
+
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    sh '''
+                        . .venv/bin/activate
+
+                        echo "Running Python source-code security scan with Bandit..."
+                        bandit -r . \
+                          -x ./.venv,./tests,./__pycache__,./.git,./.sonar
+                    '''
+                }
+
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    sh '''
+                        echo "Running Docker image vulnerability scan with Trivy..."
+                        echo "Scanning image: $IMAGE_NAME:$APP_VERSION"
+
+                        docker run --rm \
+                          -v /var/run/docker.sock:/var/run/docker.sock \
+                          aquasec/trivy:latest image \
+                          --severity HIGH,CRITICAL \
+                          --exit-code 1 \
+                          $IMAGE_NAME:$APP_VERSION
+                    '''
+                }
+
+                echo 'Security stage finished. Findings should be reviewed, fixed, mitigated, or documented in the next hardening pass.'
             }
         }
 
