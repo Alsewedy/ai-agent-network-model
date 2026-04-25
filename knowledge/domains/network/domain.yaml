@@ -1,0 +1,12 @@
+domain:
+  name: "network"
+  last_updated: null
+  owner: "Abdulaziz"
+  open_questions_count: 8
+  standards_mapped: true
+  categories_used:
+    - scope
+    - posture
+    - uncertainty
+    - communication
+    - evidence

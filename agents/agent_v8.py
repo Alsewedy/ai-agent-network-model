@@ -1,21 +1,21 @@
 """
-agent_v8.py – Hybrid YAML + RAG + LLM network reasoning agent.
+agent_v8.py – Advanced Hybrid Orchestration Agent for the new knowledge architecture.
 
-Key changes from v7:
-  1. Multi-intent: uses the retriever's full intent set instead of single classify_question
-  2. Dynamic scaling: top_k and prompt max_chunks scale with intent complexity
-  3. Dependency-aware zone context: pulls in asset descriptions for dependency targets
-  4. Fixed alias map: separates services (Vault, Keycloak, Internal API) from hosts
-  5. Flow metadata preserved in prompt: flow_assets reach the LLM
-  6. Cached alias map: built once at startup
-  7. Smart open_questions: zone-relevant filtering without full-fallback flooding
-  8. Better prompt: passes intent set, explicit section order, tighter instructions
+Key properties:
+  1. Multi-intent reasoning
+  2. Dynamic retrieval scaling
+  3. Structured facts as primary source of truth
+  4. Local markdown / RAG knowledge as part of the local KB
+  5. Standards-aware comparison support
+  6. Uncertainty-aware reasoning support
+  7. Optional external-guidance behavior with explicit mode separation
+  8. Unified context shape across agents
 """
 
 import json
 import re
 from pathlib import Path
-from functools import lru_cache
+
 import yaml
 
 from services.llm_client import real_llm_response
@@ -24,28 +24,84 @@ from rag.retrieve_chunks_v2 import retrieve_with_metadata
 
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BASE_DIR.parent
-KNOWLEDGE_DIR = PROJECT_ROOT / "knowledge" / "network_domain"
-YAML_FILE = KNOWLEDGE_DIR / "08_structured_network_model.yaml"
+
+KNOWLEDGE_ROOT = PROJECT_ROOT / "knowledge"
+NETWORK_DOMAIN_DIR = KNOWLEDGE_ROOT / "domains" / "network"
+
+INDEX_FILE = KNOWLEDGE_ROOT / "index.yaml"
+DOMAIN_FILE = NETWORK_DOMAIN_DIR / "domain.yaml"
+MODEL_FILE = NETWORK_DOMAIN_DIR / "model.yaml"
+CONTROL_REFERENCES_FILE = KNOWLEDGE_ROOT / "standards" / "mappings" / "control_references.yaml"
 
 
 # ════════════════════════════════════════════════════════════════
-#  Loading & Normalization
+#  Loading
 # ════════════════════════════════════════════════════════════════
 
-def load_model():
-    with open(YAML_FILE, "r", encoding="utf-8") as f:
+def _load_yaml_file(file_path: Path):
+    if not file_path.exists():
+        return None
+
+    with open(file_path, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
 
-    if not isinstance(data, dict):
-        raise ValueError(
-            f"Expected YAML root to be a dictionary, got: {type(data)}. "
-            "Check 08_structured_network_model.yaml for formatting issues."
-        )
     return data
 
 
+def load_model():
+    model = _load_yaml_file(MODEL_FILE)
+
+    if model is None:
+        raise ValueError(
+            "model.yaml was loaded as None. "
+            "Check the file for invalid YAML formatting or extra text."
+        )
+
+    if not isinstance(model, dict):
+        raise ValueError(
+            f"Expected YAML root to be a dictionary, but got: {type(model)}"
+        )
+
+    return model
+
+
+def load_domain():
+    data = _load_yaml_file(DOMAIN_FILE)
+    if data is None:
+        return {}
+    if not isinstance(data, dict):
+        raise ValueError(f"Expected domain.yaml root to be a dictionary, but got: {type(data)}")
+    return data
+
+
+def load_index():
+    data = _load_yaml_file(INDEX_FILE)
+    if data is None:
+        return {}
+    if not isinstance(data, dict):
+        raise ValueError(f"Expected index.yaml root to be a dictionary, but got: {type(data)}")
+    return data
+
+
+def load_control_references():
+    data = _load_yaml_file(CONTROL_REFERENCES_FILE)
+    if data is None:
+        return {"controls": []}
+    if not isinstance(data, dict):
+        raise ValueError(
+            f"Expected control_references.yaml root to be a dictionary, but got: {type(data)}"
+        )
+    data.setdefault("controls", [])
+    return data
+
+
+# ════════════════════════════════════════════════════════════════
+#  Normalization
+# ════════════════════════════════════════════════════════════════
+
 def normalize_text(text: str) -> str:
     text = text.lower().strip()
+    text = text.replace("→", " ")
     text = text.replace("/", " ")
     text = text.replace("-", " ")
     text = re.sub(r"[^a-z0-9\s]", " ", text)
@@ -54,126 +110,148 @@ def normalize_text(text: str) -> str:
 
 
 # ════════════════════════════════════════════════════════════════
-#  Entity Detection with Cached Alias Map
+#  Alias Map / Entity Detection
 # ════════════════════════════════════════════════════════════════
 
 def build_alias_map(model: dict) -> dict:
-    """
-    Build a mapping from normalized text → (kind, canonical_name).
-    Kinds: "asset", "zone", "service"
-
-    Service aliases resolve to the SERVICE name (e.g. "Vault"),
-    not to the hosting asset. The agent can then look up which
-    asset hosts a given service via the YAML assets list.
-    """
     aliases = {}
 
-    # ── Assets ──
-    for asset in model.get("assets", []):
-        name = asset["name"]
-        aliases[normalize_text(name)] = ("asset", name)
+    # ── Scope units ──
+    for unit in model.get("scope_units", []):
+        name = unit.get("name")
+        if not name:
+            continue
 
-    # Asset-specific aliases
-    aliases["dc01"] = ("asset", "DC01-CYBERAUDIT")
-    aliases["domain controller"] = ("asset", "DC01-CYBERAUDIT")
-    aliases["laptop"] = ("asset", "Admin laptop")
-    aliases["switch"] = ("asset", "Switch Management")
-    aliases["proxy"] = ("asset", "PROXY01")
+        aliases[normalize_text(name)] = ("scope_unit", name)
 
-    # ── Services (NOT aliases for the host) ──
+    aliases["lan"] = ("scope_unit", "LAN")
+    aliases["app zone"] = ("scope_unit", "APP_ZONE")
+    aliases["appzone"] = ("scope_unit", "APP_ZONE")
+    aliases["service zone"] = ("scope_unit", "SERVICE_ZONE")
+    aliases["servicezone"] = ("scope_unit", "SERVICE_ZONE")
+    aliases["dmz"] = ("scope_unit", "DMZ_ZONE")
+    aliases["dmz zone"] = ("scope_unit", "DMZ_ZONE")
+    aliases["mgmt"] = ("scope_unit", "MGMT_SEGMENT")
+    aliases["management segment"] = ("scope_unit", "MGMT_SEGMENT")
+    aliases["admin segment"] = ("scope_unit", "ADMIN_SEGMENT")
+    aliases["employee segment"] = ("scope_unit", "EMPLOYEE_SEGMENT")
+    aliases["guest segment"] = ("scope_unit", "GUEST_SEGMENT")
+    aliases["wan"] = ("scope_unit", "WAN")
+
+    # ── Entities ──
+    for entity in model.get("entities", []):
+        name = entity.get("name")
+        if not name:
+            continue
+
+        aliases[normalize_text(name)] = ("entity", name)
+
+    aliases["dc01"] = ("entity", "DC01-CYBERAUDIT")
+    aliases["domain controller"] = ("entity", "DC01-CYBERAUDIT")
+    aliases["laptop"] = ("entity", "Admin laptop")
+    aliases["admin laptop"] = ("entity", "Admin laptop")
+    aliases["switch"] = ("entity", "Switch Management")
+    aliases["switch management"] = ("entity", "Switch Management")
+    aliases["proxy"] = ("entity", "PROXY01")
+    aliases["proxy01"] = ("entity", "PROXY01")
+    aliases["iam"] = ("entity", "IAM01")
+    aliases["iam01"] = ("entity", "IAM01")
+    aliases["db"] = ("entity", "DB01")
+    aliases["db01"] = ("entity", "DB01")
+
+    # ── Services ──
+    for entity in model.get("entities", []):
+        for service in entity.get("services", []):
+            if not service:
+                continue
+            aliases[normalize_text(service)] = ("service", service)
+
     aliases["vault"] = ("service", "Vault")
-    aliases["keycloak"] = ("service", "Keycloak")
+    aliases["keycloak"] = ("service", "Keycloak IAM")
     aliases["internal api"] = ("service", "Internal API")
-    aliases["mariadb"] = ("service", "MariaDB")
-
-    # ── Zones ──
-    for zone in model.get("zones", []):
-        name = zone["name"]
-        aliases[normalize_text(name)] = ("zone", name)
-
-    # Zone-specific aliases
-    aliases["lan"] = ("zone", "LAN / DATA")
-    aliases["lan data"] = ("zone", "LAN / DATA")
-    aliases["app zone"] = ("zone", "APP_ZONE")
-    aliases["appzone"] = ("zone", "APP_ZONE")
-    aliases["service zone"] = ("zone", "SERVICE_ZONE")
-    aliases["servicezone"] = ("zone", "SERVICE_ZONE")
-    aliases["dmz"] = ("zone", "DMZ_ZONE")
-    aliases["dmz zone"] = ("zone", "DMZ_ZONE")
-    aliases["management zone"] = ("zone", "MGMT")
+    aliases["mariadb"] = ("service", "MariaDB database services")
+    aliases["dns"] = ("service", "Internal DNS")
+    aliases["time"] = ("service", "Time service")
+    aliases["ntp"] = ("service", "Time / NTP")
 
     return aliases
 
 
 def extract_entities(alias_map: dict, question: str):
-    """
-    Detect assets, zones, and services mentioned in the question.
-    Uses word-boundary matching to prevent false positives
-    (e.g. 'plan' should not match 'lan' alias).
-    Sorted longest-first to avoid partial matches.
-    """
     nq = normalize_text(question)
-    found_assets = []
-    found_zones = []
+
+    found_entities = []
+    found_scope_units = []
     found_services = []
 
     for alias in sorted(alias_map.keys(), key=len, reverse=True):
         if not alias:
             continue
-        # Word-boundary match: alias must appear as a whole word/phrase
-        pattern = r"(?:^|\s)" + re.escape(alias) + r"(?:\s|$)"
-        if re.search(pattern, nq):
-            kind, canonical = alias_map[alias]
-            if kind == "asset" and canonical not in found_assets:
-                found_assets.append(canonical)
-            elif kind == "zone" and canonical not in found_zones:
-                found_zones.append(canonical)
-            elif kind == "service" and canonical not in found_services:
-                found_services.append(canonical)
 
-    return found_assets, found_zones, found_services
+        pattern = r"(?:^|\s)" + re.escape(alias) + r"(?:\s|$)"
+        if not re.search(pattern, nq):
+            continue
+
+        kind, canonical = alias_map[alias]
+
+        if kind == "entity" and canonical not in found_entities:
+            found_entities.append(canonical)
+        elif kind == "scope_unit" and canonical not in found_scope_units:
+            found_scope_units.append(canonical)
+        elif kind == "service" and canonical not in found_services:
+            found_services.append(canonical)
+
+    return found_entities, found_scope_units, found_services
 
 
 def find_host_for_service(model: dict, service_name: str) -> str | None:
-    """Given a service name like 'Vault', find which asset hosts it."""
-    sn = service_name.lower()
-    for asset in model.get("assets", []):
-        # Check hosted_components
-        for comp in asset.get("hosted_components", []):
-            if sn in comp.lower():
-                return asset["name"]
-        # Check services list
-        for svc in asset.get("services", []):
-            if sn in svc.lower():
-                return asset["name"]
+    target = normalize_text(service_name)
+
+    for entity in model.get("entities", []):
+        for service in entity.get("services", []):
+            if target in normalize_text(service):
+                return entity.get("name")
+
     return None
 
 
 # ════════════════════════════════════════════════════════════════
-#  YAML Context Builders
+#  Model Helpers
 # ════════════════════════════════════════════════════════════════
 
-def find_asset(model: dict, asset_name: str):
-    for asset in model.get("assets", []):
-        if asset.get("name") == asset_name:
-            return asset
+def find_entity(model: dict, entity_name: str):
+    for entity in model.get("entities", []):
+        if entity.get("name") == entity_name:
+            return entity
     return None
 
 
-def find_zone(model: dict, zone_name: str):
-    for zone in model.get("zones", []):
-        if zone.get("name") == zone_name:
-            return zone
+def find_scope_unit(model: dict, scope_unit_name: str):
+    for unit in model.get("scope_units", []):
+        if unit.get("name") == scope_unit_name:
+            return unit
     return None
 
 
-def get_assets_in_zone(model: dict, zone_name: str):
-    return [a for a in model.get("assets", []) if a.get("zone") == zone_name]
+def get_entities_in_scope_unit(model: dict, scope_unit_name: str):
+    names = []
+
+    for unit in model.get("scope_units", []):
+        if unit.get("name") == scope_unit_name:
+            names = unit.get("entities", []) or []
+            break
+
+    results = []
+    for entity in model.get("entities", []):
+        if entity.get("name") in names:
+            results.append(entity)
+
+    return results
 
 
-def get_dependencies(model: dict, asset_name: str):
+def get_dependencies(model: dict, entity_name: str):
     for item in model.get("dependencies", []):
-        if item.get("asset") == asset_name:
+        if item.get("entity") == entity_name:
             return item.get("depends_on", [])
     return []
 
@@ -181,156 +259,260 @@ def get_dependencies(model: dict, asset_name: str):
 def get_reverse_dependencies(model: dict, target_name: str):
     results = []
     norm_target = normalize_text(target_name)
+
     for item in model.get("dependencies", []):
-        for dep in item.get("depends_on", []):
+        entity = item.get("entity")
+        depends_on = item.get("depends_on", [])
+        for dep in depends_on:
             if norm_target in normalize_text(dep):
                 results.append({
-                    "asset": item.get("asset"),
+                    "entity": entity,
                     "depends_on_entry": dep,
                 })
+
     return results
 
 
-def entry_mentions(entry: dict, name: str) -> bool:
-    """Check if a YAML flow/blocked entry mentions a given name."""
-    norm = normalize_text(name)
-    fields = ["source", "destination", "service", "purpose", "flow"]
-    return any(norm in normalize_text(str(entry.get(f, ""))) for f in fields)
+def _entry_mentions_name(entry: dict, name: str):
+    norm_name = normalize_text(name)
+    joined = " ".join(
+        normalize_text(str(v))
+        for v in entry.values()
+        if isinstance(v, (str, int, float, bool))
+    )
+    return norm_name in joined
 
 
-def get_required_flows(model: dict, name: str):
-    return [f for f in model.get("required_flows", []) if entry_mentions(f, name)]
+def get_required_flows_for_name(model: dict, name: str):
+    return [f for f in model.get("required_flows", []) if _entry_mentions_name(f, name)]
 
 
-def get_port_matrix(model: dict, name: str):
-    return [p for p in model.get("port_protocol_matrix", []) if entry_mentions(p, name)]
+def get_technical_matrix_for_name(model: dict, name: str):
+    return [t for t in model.get("technical_matrix", []) if _entry_mentions_name(t, name)]
 
 
-def get_blocked_flows(model: dict, name: str):
-    return [b for b in model.get("blocked_or_unnecessary_flows", []) if entry_mentions(b, name)]
+def get_unnecessary_access_for_name(model: dict, name: str):
+    return [u for u in model.get("unnecessary_access", []) if _entry_mentions_name(u, name)]
 
 
-def get_target_intent(model: dict, zone_name: str) -> dict:
-    target = model.get("target_security_intent", {})
+def get_target_intent_for_scope_unit(model: dict, scope_unit_name: str):
+    target = model.get("target_intent", {})
     return {
-        "zone_intent": target.get("zone_intent", {}).get(zone_name, ""),
         "general": target.get("general", []),
-        "identity_intent": target.get("identity_intent", []),
-        "database_and_secret_intent": target.get("database_and_secret_intent", []),
-        "proxy_and_egress_intent": target.get("proxy_and_egress_intent", []),
-        "administrative_access_intent": target.get("administrative_access_intent", []),
+        "scope_unit_target": target.get("per_scope_unit", {}).get(scope_unit_name, ""),
+        "intended_alignment": [
+            item for item in target.get("intended_alignment", [])
+            if item.get("scope_unit") in {scope_unit_name, "general"}
+        ],
     }
 
 
-def get_open_questions(model: dict, zone_name: str | None = None) -> list:
-    """
-    Return open questions. If zone_name is provided, filter to relevant ones.
-    Unlike v7, does NOT fall back to returning ALL questions if none match.
-    """
-    questions = model.get("open_questions", [])
-    if not zone_name:
-        return questions
-
-    zn = normalize_text(zone_name)
-    filtered = [q for q in questions if zn in normalize_text(q)]
-    return filtered  # may be empty — that's fine
+def get_open_questions(model: dict):
+    return model.get("open_questions", [])
 
 
-def build_asset_context(model: dict, asset_name: str) -> dict:
-    asset = find_asset(model, asset_name)
-    zone_name = asset.get("zone") if asset else None
+def get_open_questions_for_name(model: dict, name: str):
+    items = model.get("open_questions", [])
+    norm_name = normalize_text(name)
+    return [q for q in items if norm_name in normalize_text(q)]
+
+
+def get_relevant_control_references(
+    control_references: dict,
+    scope_units: list[str] | None = None,
+    domains: list[str] | None = None,
+):
+    scope_units = scope_units or []
+    domains = domains or ["network"]
+
+    results = []
+
+    for control in control_references.get("controls", []):
+        relevant_domains = control.get("relevant_domains", [])
+        relevant_scope_units = control.get("relevant_scope_units", [])
+
+        domain_match = any(d in relevant_domains for d in domains)
+        scope_match = not scope_units or any(su in relevant_scope_units for su in scope_units)
+
+        if domain_match and scope_match:
+            results.append(control)
+
+    return results
+
+
+def infer_risk_owner(
+    domain_data: dict,
+    entities: list[str],
+    scope_units: list[str],
+    services: list[str],
+) -> dict:
+    domain_root = domain_data.get("domain", {})
+
+    domain_owner = domain_root.get("owner", "Unknown")
+    domain_name = domain_root.get("name", "Unknown")
+
+    matched_from = "domain_owner_fallback"
+
+    if "IAM01" in entities or any(normalize_text(s) in {"keycloak iam", "internal api"} for s in services):
+        return {
+            "owner": domain_owner,
+            "basis": "IAM-related issue; no narrower owner documented, so domain owner is used as fallback.",
+            "matched_from": matched_from,
+            "domain": domain_name,
+        }
+
+    if "MGMT_SEGMENT" in scope_units or "ADMIN_SEGMENT" in scope_units:
+        return {
+            "owner": domain_owner,
+            "basis": "Management / privileged-access issue; no narrower owner documented, so domain owner is used as fallback.",
+            "matched_from": matched_from,
+            "domain": domain_name,
+        }
+
+    if "WAN" in scope_units or "DMZ_ZONE" in scope_units or "PROXY01" in entities:
+        return {
+            "owner": domain_owner,
+            "basis": "Boundary / egress / DMZ-related issue; no narrower owner documented, so domain owner is used as fallback.",
+            "matched_from": matched_from,
+            "domain": domain_name,
+        }
 
     return {
-        "asset": asset,
-        "zone": find_zone(model, zone_name) if zone_name else None,
-        "dependencies": get_dependencies(model, asset_name),
-        "reverse_dependencies": get_reverse_dependencies(model, asset_name),
-        "required_flows": get_required_flows(model, asset_name),
-        "port_protocol_matrix": get_port_matrix(model, asset_name),
-        "blocked_flows": get_blocked_flows(model, asset_name),
-        "zone_target_intent": get_target_intent(model, zone_name) if zone_name else {},
-        "open_questions": get_open_questions(model),
-    }
-
-
-def build_zone_context(model: dict, zone_name: str, include_dep_targets: bool = False) -> dict:
-    """
-    Build zone context. When include_dep_targets=True (used for transition_plan),
-    also includes asset descriptions for dependency targets outside the zone,
-    so the LLM understands what IAM01, DB01, etc. are.
-    """
-    zone = find_zone(model, zone_name)
-    assets = get_assets_in_zone(model, zone_name)
-    asset_names = [a["name"] for a in assets]
-
-    zone_required_flows = []
-    zone_port_matrix = []
-    dep_target_names = set()
-
-    for asset_name in asset_names:
-        zone_required_flows.extend(get_required_flows(model, asset_name))
-        zone_port_matrix.extend(get_port_matrix(model, asset_name))
-        for dep in get_dependencies(model, asset_name):
-            dep_target_names.add(dep)
-
-    result = {
-        "zone": zone,
-        "assets_in_zone": assets,
-        "required_flows": zone_required_flows,
-        "port_protocol_matrix": zone_port_matrix,
-        "blocked_flows": get_blocked_flows(model, zone_name),
-        "target_intent": get_target_intent(model, zone_name),
-        "open_questions": get_open_questions(model, zone_name),
-    }
-
-    # Include dependency target descriptions
-    if include_dep_targets:
-        dep_target_assets = []
-        for dep_name in dep_target_names:
-            # dep_name might be "Vault on DB01" — try exact match first, then partial
-            asset = find_asset(model, dep_name)
-            if not asset:
-                # Try extracting host from "Service on Host" pattern
-                m = re.search(r"on\s+(\S+)", dep_name)
-                if m:
-                    asset = find_asset(model, m.group(1))
-            if asset and asset["name"] not in asset_names:
-                if asset not in dep_target_assets:
-                    dep_target_assets.append(asset)
-        result["dependency_target_assets"] = dep_target_assets
-
-    return result
-
-
-def build_global_context(model: dict) -> dict:
-    return {
-        "zones": model.get("zones", []),
-        "assets": model.get("assets", []),
-        "dependencies": model.get("dependencies", []),
-        "required_flows": model.get("required_flows", []),
-        "port_protocol_matrix": model.get("port_protocol_matrix", []),
-        "blocked_or_unnecessary_flows": model.get("blocked_or_unnecessary_flows", []),
-        "open_questions": model.get("open_questions", []),
-        "target_security_intent": model.get("target_security_intent", {}),
+        "owner": domain_owner,
+        "basis": "No narrower owner is documented for this issue, so the domain owner is used as the default risk owner.",
+        "matched_from": matched_from,
+        "domain": domain_name,
     }
 
 
 # ════════════════════════════════════════════════════════════════
-#  Dynamic Scaling
+#  Intent Logic / Answer Modes
 # ════════════════════════════════════════════════════════════════
 
-def compute_rag_params(intents: set[str]) -> dict:
-    """
-    Determine top_k and max_chunks_for_prompt based on intent complexity.
-    Complex multi-aspect questions get more context; simple lookups stay lean.
-    """
-    if "transition_plan" in intents:
-        return {"top_k": 20, "max_chunks": 16}
-    if "allow_list" in intents:
-        return {"top_k": 15, "max_chunks": 12}
-    if intents & {"required_flows", "blocked", "unresolved"}:
-        return {"top_k": 12, "max_chunks": 10}
-    return {"top_k": 10, "max_chunks": 8}
+def classify_question(question: str, entities: list[str], scope_units: list[str], services: list[str]) -> list[str]:
+    q = normalize_text(question)
+    intents = []
+
+    if "transition plan" in q or "least privilege transition plan" in q:
+        intents.append("transition_plan")
+
+    if "allow list" in q or "must remain open" in q or "keep working" in q:
+        intents.append("required_flows")
+
+    if "depend" in q or "dependency" in q or "rely on" in q:
+        intents.append("dependencies")
+
+    if "port" in q or "protocol" in q or "endpoint" in q:
+        intents.append("technical_details")
+
+    if "inventory" in q or "list all" in q or "enumerate" in q:
+        intents.append("inventory")
+
+    if "broad" in q or "too open" in q or "overly broad" in q or "unnecessary access" in q:
+        intents.append("overly_broad_access")
+
+    if "intended posture" in q or "target posture" in q or "final design" in q or "intended" in q:
+        intents.append("target_posture")
+
+    if "unresolved" in q or "open question" in q or "uncertain" in q or "not fully confirmed" in q:
+        intents.append("uncertainty")
+
+    if "standard" in q or "policy" in q or "least privilege" in q or "segmentation" in q or "boundary protection" in q:
+        intents.append("standards_comparison")
+
+    if (
+        "best practice" in q
+        or "external guidance" in q
+        or "outside my kb" in q
+        or "not in my files" in q
+        or "from the internet" in q
+        or "official guidance" in q
+        or "vendor guidance" in q
+        or "trusted external" in q
+    ):
+        intents.append("external_guidance")
+
+    if "owner of the risk" in q or "risk owner" in q or "who owns" in q:
+        intents.append("risk_owner")
+
+    if not intents:
+        if entities or scope_units or services:
+            intents.append("entity_general")
+        else:
+            intents.append("general_network_question")
+
+    deduped = []
+    for item in intents:
+        if item not in deduped:
+            deduped.append(item)
+
+    return deduped
+
+
+def should_include_standards_section(question: str, intents: list[str]) -> bool:
+    q = normalize_text(question)
+
+    explicit_policy_request = any(
+        phrase in q for phrase in [
+            "what policies",
+            "which policy",
+            "which policies",
+            "what standard",
+            "which standard",
+            "which standards",
+            "what control",
+            "which control",
+            "which controls",
+            "what does it violate",
+            "what does this violate",
+            "why does it violate",
+            "what conflicts",
+            "what does it conflict with",
+            "why is it misaligned",
+            "is it aligned",
+            "is it compliant",
+            "is it non compliant",
+            "compare against",
+        ]
+    )
+
+    evaluative_intents = {
+        "standards_comparison",
+        "target_posture",
+        "overly_broad_access",
+        "external_guidance",
+    }
+
+    return explicit_policy_request or any(intent in evaluative_intents for intent in intents)
+
+
+def determine_answer_mode(question: str, intents: list[str], control_reference_count: int) -> dict:
+    q = normalize_text(question)
+
+    explicit_verify = (
+        "verify" in q
+        or "confirm externally" in q
+        or "validate externally" in q
+        or "are you sure" in q
+    )
+
+    external_requested = "external_guidance" in intents
+    local_standards_missing = control_reference_count == 0 and "standards_comparison" in intents
+
+    if explicit_verify:
+        mode = "external_verification"
+    elif external_requested or local_standards_missing:
+        mode = "internal_plus_external"
+    else:
+        mode = "internal_only"
+
+    return {
+        "mode": mode,
+        "external_guidance_requested": external_requested,
+        "explicit_external_verification": explicit_verify,
+        "local_standards_missing": local_standards_missing,
+        "needs_audit_style_structure": True,
+    }
 
 
 # ════════════════════════════════════════════════════════════════
@@ -338,11 +520,8 @@ def compute_rag_params(intents: set[str]) -> dict:
 # ════════════════════════════════════════════════════════════════
 
 def format_rag_chunks(chunks: list[tuple[int, dict]], max_chunks: int) -> list[dict]:
-    """
-    Format and trim RAG chunks for prompt inclusion.
-    Preserves flow_assets metadata so the LLM can reason about connectivity.
-    """
     formatted = []
+
     for score, chunk in chunks[:max_chunks]:
         entry = {
             "chunk_id": chunk.get("chunk_id"),
@@ -350,126 +529,257 @@ def format_rag_chunks(chunks: list[tuple[int, dict]], max_chunks: int) -> list[d
             "section_title": chunk.get("section_title"),
             "chunk_type": chunk.get("chunk_type"),
             "entities": chunk.get("entities", []),
-            "zones": chunk.get("zones", []),
+            "scope_units": chunk.get("scope_units", []),
             "confidence_tags": chunk.get("confidence_tags", []),
-            "text": chunk.get("text", "")[:1500],
+            "flow_entities": chunk.get("flow_entities", []),
+            "flow_scope_units": chunk.get("flow_scope_units", []),
+            "text": chunk.get("text", "")[:1600],
+            "score": score,
         }
-        # Include flow metadata when present
-        flow_assets = chunk.get("flow_assets", [])
-        if flow_assets:
-            entry["flow_assets"] = flow_assets
-        flow_src = chunk.get("flow_source")
-        flow_dst = chunk.get("flow_destination")
-        if flow_src and flow_dst:
-            entry["flow_direction"] = f"{flow_src.get('raw', '?')} -> {flow_dst.get('raw', '?')}"
+
+        flow_source = chunk.get("flow_source")
+        flow_destination = chunk.get("flow_destination")
+        if flow_source and flow_destination:
+            entry["flow_direction"] = f"{flow_source.get('raw', '?')} -> {flow_destination.get('raw', '?')}"
 
         formatted.append(entry)
+
     return formatted
 
 
 # ════════════════════════════════════════════════════════════════
-#  Context Assembly
+#  Context Builders
 # ════════════════════════════════════════════════════════════════
 
-def build_context(model: dict, alias_map: dict, question: str) -> dict:
-    """
-    Build the full context for a question:
-      1. Detect entities
-      2. Retrieve RAG chunks (with intents + focus from retriever)
-      3. Build YAML structured facts based on entity scope
-      4. Assemble everything into a context dict
-    """
-    assets, zones, services = extract_entities(alias_map, question)
-
-    # Resolve services to their hosting assets for YAML lookups
-    service_hosts = {}
-    for svc in services:
-        host = find_host_for_service(model, svc)
-        if host:
-            service_hosts[svc] = host
-            if host not in assets:
-                assets.append(host)
-
-    # Get RAG results WITH metadata (intents + focus)
-    rag_params_preliminary = compute_rag_params(set())  # initial estimate
-    rag_result = retrieve_with_metadata(question, top_k=15)
-    intents = rag_result["intents"]
-    focus = rag_result["focus"]
-
-    # Now recompute with actual intents for proper scaling
-    rag_params = compute_rag_params(intents)
-    if rag_params["top_k"] > 15:
-        rag_result = retrieve_with_metadata(question, top_k=rag_params["top_k"])
-
-    rag_chunks = format_rag_chunks(
-        rag_result["chunks"],
-        max_chunks=rag_params["max_chunks"],
-    )
-
-    # ── Build structured YAML facts ──
-    structured_facts = {}
-    is_complex = bool(intents & {"transition_plan", "allow_list"})
-
-    if "transition_plan" in intents and zones:
-        # Full zone context with dependency target descriptions
-        zone_name = zones[0]
-        structured_facts["zone_context"] = build_zone_context(
-            model, zone_name, include_dep_targets=True
-        )
-        # Also include blocked flows that mention the zone by name
-        zone_blocked = get_blocked_flows(model, zone_name)
-        # And blocked flows for each asset in the zone
-        for asset_name in focus.get("zone_assets", []):
-            zone_blocked.extend(get_blocked_flows(model, asset_name))
-        # Deduplicate
-        seen = set()
-        deduped = []
-        for b in zone_blocked:
-            key = json.dumps(b, sort_keys=True)
-            if key not in seen:
-                seen.add(key)
-                deduped.append(b)
-        structured_facts["zone_context"]["blocked_flows"] = deduped
-
-    elif assets and zones:
-        structured_facts["assets_context"] = {
-            name: build_asset_context(model, name) for name in assets
-        }
-        structured_facts["zones_context"] = {
-            name: build_zone_context(model, name, include_dep_targets=is_complex)
-            for name in zones
-        }
-
-    elif assets:
-        structured_facts["assets_context"] = {
-            name: build_asset_context(model, name) for name in assets
-        }
-
-    elif zones:
-        structured_facts["zones_context"] = {
-            name: build_zone_context(model, name, include_dep_targets=is_complex)
-            for name in zones
-        }
-
-    else:
-        structured_facts["global_context"] = build_global_context(model)
+def build_entity_context(model: dict, entity_name: str):
+    entity = find_entity(model, entity_name)
+    scope_unit_name = entity.get("scope_unit") if entity else None
 
     return {
+        "entity": entity,
+        "scope_unit": find_scope_unit(model, scope_unit_name) if scope_unit_name else None,
+        "dependencies": get_dependencies(model, entity_name),
+        "reverse_dependencies": get_reverse_dependencies(model, entity_name),
+        "required_flows": get_required_flows_for_name(model, entity_name),
+        "technical_matrix": get_technical_matrix_for_name(model, entity_name),
+        "unnecessary_access": get_unnecessary_access_for_name(model, entity_name),
+        "target_intent": get_target_intent_for_scope_unit(model, scope_unit_name) if scope_unit_name else {},
+        "open_questions": get_open_questions_for_name(model, entity_name),
+    }
+
+
+def build_scope_unit_context(model: dict, scope_unit_name: str, include_dependency_targets: bool = False):
+    scope_unit = find_scope_unit(model, scope_unit_name)
+    entities = get_entities_in_scope_unit(model, scope_unit_name)
+    entity_names = [e.get("name") for e in entities]
+
+    required_flows = []
+    technical_matrix = []
+    unnecessary_access = []
+    dependency_target_names = set()
+
+    for entity_name in entity_names:
+        required_flows.extend(get_required_flows_for_name(model, entity_name))
+        technical_matrix.extend(get_technical_matrix_for_name(model, entity_name))
+        unnecessary_access.extend(get_unnecessary_access_for_name(model, entity_name))
+
+        for dep in get_dependencies(model, entity_name):
+            dependency_target_names.add(dep)
+
+    unnecessary_access.extend(get_unnecessary_access_for_name(model, scope_unit_name))
+
+    result = {
+        "scope_unit": scope_unit,
+        "entities_in_scope_unit": entities,
+        "required_flows": required_flows,
+        "technical_matrix": technical_matrix,
+        "unnecessary_access": unnecessary_access,
+        "target_intent": get_target_intent_for_scope_unit(model, scope_unit_name),
+        "open_questions": get_open_questions_for_name(model, scope_unit_name),
+    }
+
+    if include_dependency_targets:
+        dependency_target_entities = []
+
+        for dep_name in dependency_target_names:
+            entity = find_entity(model, dep_name)
+            if not entity:
+                match = re.search(r"on\s+(.+)$", dep_name)
+                if match:
+                    entity = find_entity(model, match.group(1).strip())
+
+            if entity and entity not in dependency_target_entities and entity.get("name") not in entity_names:
+                dependency_target_entities.append(entity)
+
+        result["dependency_target_entities"] = dependency_target_entities
+
+    return result
+
+
+def build_service_context(model: dict, service_name: str):
+    matching_entities = []
+
+    for entity in model.get("entities", []):
+        services = entity.get("services", [])
+        if any(normalize_text(service_name) in normalize_text(s) for s in services):
+            matching_entities.append(entity)
+
+    return {
+        "service_name": service_name,
+        "hosting_entities": matching_entities,
+        "required_flows": get_required_flows_for_name(model, service_name),
+        "technical_matrix": get_technical_matrix_for_name(model, service_name),
+    }
+
+
+def build_global_context(model: dict, domain_data: dict, index_data: dict, control_references: dict):
+    return {
+        "domain": model.get("domain", {}),
+        "domain_metadata": domain_data,
+        "scope_units": model.get("scope_units", []),
+        "entities": model.get("entities", []),
+        "dependencies": model.get("dependencies", []),
+        "unnecessary_access": model.get("unnecessary_access", []),
+        "target_intent": model.get("target_intent", {}),
+        "open_questions": model.get("open_questions", []),
+        "required_flows": model.get("required_flows", []),
+        "technical_matrix": model.get("technical_matrix", []),
+        "control_references": get_relevant_control_references(control_references, domains=["network"]),
+        "index_metadata": index_data,
+    }
+
+
+def build_context(model: dict, alias_map: dict, question: str):
+    domain_data = load_domain()
+    domain_root = domain_data.get("domain", {})
+    index_data = load_index()
+    control_references = load_control_references()
+
+    entities, scope_units, services = extract_entities(alias_map, question)
+
+    service_hosts = {}
+    for service in services:
+        host = find_host_for_service(model, service)
+        if host:
+            service_hosts[service] = host
+            if host not in entities:
+                entities.append(host)
+
+    relevant_scope_units = scope_units.copy()
+
+    for entity_name in entities:
+        entity = find_entity(model, entity_name)
+        if entity and entity.get("scope_unit") and entity["scope_unit"] not in relevant_scope_units:
+            relevant_scope_units.append(entity["scope_unit"])
+
+    relevant_controls = get_relevant_control_references(
+        control_references=control_references,
+        scope_units=relevant_scope_units,
+        domains=["network"],
+    )
+
+    intents = classify_question(question, entities, scope_units, services)
+    answer_mode = determine_answer_mode(question, intents, len(relevant_controls))
+    include_standards_section = should_include_standards_section(question, intents)
+
+    rag_result = retrieve_with_metadata(question, top_k=10)
+    rag_chunks = format_rag_chunks(rag_result.get("chunks", []), max_chunks=14)
+
+    risk_owner = infer_risk_owner(
+        domain_data=domain_data,
+        entities=entities,
+        scope_units=relevant_scope_units,
+        services=services,
+    )
+
+    context = {
         "question": question,
-        "intents": sorted(intents),
+        "intents": intents,
         "entities": {
-            "assets": assets,
-            "zones": zones,
+            "entities": entities,
+            "scope_units": scope_units,
             "services": services,
             "service_hosts": service_hosts,
         },
         "focus": {
-            "zone_assets": focus.get("zone_assets", []),
-            "dep_assets": focus.get("dep_assets", []),
+            "retriever_intents": sorted(list(rag_result.get("intents", set()))),
+            "retriever_focus": rag_result.get("focus", {}),
         },
-        "structured_facts": structured_facts,
+        "structured_facts": {},
         "rag_chunks": rag_chunks,
+        "control_references": {
+            "relevant_controls": relevant_controls
+        },
+        "answer_mode": answer_mode,
+        "response_style": {
+            "include_standards_section": include_standards_section,
+            "include_external_section": answer_mode["mode"] in {"internal_plus_external", "external_verification"},
+            "inventory_style": "inventory" in intents or "technical_details" in intents,
+        },
+        "domain_metadata": {
+            "name": domain_root.get("name"),
+            "description": domain_root.get("description"),
+            "owner": domain_root.get("owner"),
+        },
+        "risk_owner": risk_owner,
+        "external_guidance_policy": {
+            "enabled": answer_mode["mode"] in {"internal_plus_external", "external_verification"},
+            "must_keep_internal_primary": True,
+            "must_check_full_local_kb_first": True,
+            "must_label_external_separately": True,
+            "local_kb_components": [
+                "structured yaml facts",
+                "markdown-derived RAG context",
+                "documented control references",
+            ],
+            "trusted_source_priority": [
+                "official standards bodies",
+                "official vendor documentation",
+                "government cybersecurity guidance",
+                "widely recognized security foundations",
+            ],
+            "avoid_source_types": [
+                "random blogs",
+                "marketing pages",
+                "forums",
+                "low-authority commentary",
+            ],
+        },
     }
+
+    include_dependency_targets = "transition_plan" in intents or "dependencies" in intents
+
+    if entities:
+        context["structured_facts"]["entities_context"] = {
+            name: build_entity_context(model, name)
+            for name in entities
+        }
+
+    if scope_units:
+        context["structured_facts"]["scope_units_context"] = {
+            name: build_scope_unit_context(
+                model,
+                name,
+                include_dependency_targets=include_dependency_targets,
+            )
+            for name in scope_units
+        }
+
+    if services:
+        context["structured_facts"]["services_context"] = {
+            name: build_service_context(model, name)
+            for name in services
+        }
+
+    if not entities and not scope_units and not services:
+        context["structured_facts"]["global_context"] = build_global_context(
+            model=model,
+            domain_data=domain_data,
+            index_data=index_data,
+            control_references=control_references,
+        )
+
+    return context
 
 
 # ════════════════════════════════════════════════════════════════
@@ -477,92 +787,304 @@ def build_context(model: dict, alias_map: dict, question: str) -> dict:
 # ════════════════════════════════════════════════════════════════
 
 def build_prompt(context: dict) -> str:
-    """
-    Build the final LLM prompt from assembled context.
-    The prompt gives the LLM:
-      - the full intent set (not just one label)
-      - YAML facts as primary source
-      - RAG chunks as supporting context with flow metadata
-      - clear answer rules ordered by priority
-    """
+    include_standards_section = context["response_style"]["include_standards_section"]
+    include_external_section = context["response_style"]["include_external_section"]
+    inventory_style = context["response_style"]["inventory_style"]
 
-    intents_str = ", ".join(context["intents"])
-    entities_str = json.dumps(context["entities"], indent=2, ensure_ascii=False)
-    focus_str = json.dumps(context["focus"], indent=2, ensure_ascii=False)
-    yaml_str = json.dumps(context["structured_facts"], indent=2, ensure_ascii=False)
-    rag_str = json.dumps(context["rag_chunks"], indent=2, ensure_ascii=False)
+    standards_instruction = ""
+    if include_standards_section:
+        standards_instruction = """
+- Relevant documented control expectations
+- Why this conflicts / may conflict / may not conflict"""
 
-    return f"""You are a network-aware AI assistant for a documented homelab environment.
+    external_instruction = ""
+    if include_external_section:
+        external_instruction = """
+- External trusted guidance"""
 
-═══ YOUR ROLE ═══
-Answer ONLY using the provided context. Do not invent facts. Do not use general cybersecurity assumptions beyond the provided context. If the context is insufficient, say so clearly.
+    section_rules_extra = ""
+    if include_standards_section:
+        section_rules_extra += """
+- "Relevant documented control expectations" = only from the documented internal control references when available
+- "Why this conflicts / may conflict / may not conflict" = explicit reasoning that connects environment evidence to the relevant standard or expectation"""
 
-═══ QUESTION ═══
+    if include_external_section:
+        section_rules_extra += """
+- "External trusted guidance" = include ONLY when answer_mode requires external reasoning or local standards are missing"""
+
+    answer_mode_extra = ""
+    if not include_standards_section:
+        answer_mode_extra = """
+- Do NOT include standards, control, policy, compliance, or conflict sections unless the user explicitly asked for them or the question is evaluative by nature.
+- For inventory, enumeration, listing, extraction, and technical-detail questions, focus on:
+  - direct answer
+  - structured inventory/table
+  - environment evidence
+  - unresolved uncertainty where needed
+"""
+
+    inventory_extra = ""
+    if inventory_style:
+        inventory_extra = """
+L) Inventory-style response rule:
+- For inventory / listing / extraction questions, prefer:
+  - a direct answer
+  - a clean table or structured list
+  - source/evidence traceability
+  - confidence / unresolved distinction
+- Do not expand into policy analysis unless explicitly requested.
+"""
+
+    return f"""You are an AI auditor for a documented environment.
+
+You must answer with strong grounding, disciplined reasoning, and explicit separation between knowledge layers.
+
+════════════════════════════════════════════
+CORE RULES
+════════════════════════════════════════════
+
+1. Structured facts are the PRIMARY organized source of truth.
+2. Retrieved RAG chunks are also part of the LOCAL documented knowledge base.
+3. Local documented knowledge includes:
+   - structured YAML facts
+   - markdown-derived RAG context
+   - documented internal control references
+4. Do NOT treat absence from YAML alone as proof that the information does not exist in the local knowledge base.
+5. Use documented internal control references first when evaluating against standards.
+6. If a relevant standard or control is not documented locally, you may use trusted external guidance when answer_mode allows it.
+7. Do NOT invent:
+   - protocols
+   - ports
+   - management paths
+   - dependencies
+   - flows
+   - standards mappings
+   - final-state rules
+   - owners not supported by context
+8. Do NOT treat current broad access as automatically justified.
+9. Do NOT confuse:
+   - current documented state
+   - required operational state
+   - target intended state
+   - unresolved uncertainty
+   - internal documented control expectations
+   - external trusted guidance
+10. If external guidance is used, it must:
+   - be clearly labeled as external
+   - be kept separate from internal KB facts
+   - never override internal KB facts
+   - use trusted sources only
+11. If the provided context is insufficient, say so clearly.
+
+════════════════════════════════════════════
+QUESTION
+════════════════════════════════════════════
+
 {context["question"]}
 
-═══ DETECTED INTENTS ═══
-{intents_str}
+════════════════════════════════════════════
+ANSWER MODE
+════════════════════════════════════════════
 
-These are the aspects the question requires you to address. For transition_plan, you must cover: required flows (allow list), flows to be blocked, target intent alignment, AND unresolved blockers.
+{json.dumps(context["answer_mode"], indent=2, ensure_ascii=False)}
 
-═══ DETECTED ENTITIES ═══
-{entities_str}
+════════════════════════════════════════════
+RESPONSE STYLE
+════════════════════════════════════════════
 
-═══ FOCUS SET (assets the question is about) ═══
-{focus_str}
+{json.dumps(context["response_style"], indent=2, ensure_ascii=False)}
 
-═══ STRUCTURED YAML FACTS (primary source of truth) ═══
-{yaml_str}
+════════════════════════════════════════════
+DOMAIN METADATA
+════════════════════════════════════════════
 
-═══ RETRIEVED RAG CHUNKS (supporting context) ═══
-{rag_str}
+{json.dumps(context["domain_metadata"], indent=2, ensure_ascii=False)}
 
-═══ ANSWER RULES (in priority order) ═══
+════════════════════════════════════════════
+RISK OWNER DEFAULT
+════════════════════════════════════════════
 
-1. START with a direct answer to the question.
+{json.dumps(context["risk_owner"], indent=2, ensure_ascii=False)}
 
-2. YAML facts are the primary source of truth. If YAML and a RAG chunk conflict, YAML wins.
+════════════════════════════════════════════
+EXTERNAL GUIDANCE POLICY
+════════════════════════════════════════════
 
-3. For allow-list or transition-plan questions, organize your answer in this order:
-   a. REQUIRED FLOWS that must remain — use exact port/protocol from port_protocol_matrix first
-   b. BROAD TRUST that should be removed — from blocked_or_unnecessary_flows
-   c. TARGET INTENT — what the final design should look like
-   d. UNRESOLVED BLOCKERS — open questions that must be answered before enforcement
-   e. LOCAL-ONLY FLOWS — host-internal flows that are not inter-host firewall rules
+{json.dumps(context["external_guidance_policy"], indent=2, ensure_ascii=False)}
 
-4. For each flow or fact, clearly indicate its certainty level:
-   - "Confirmed" — observed or code-verified
-   - "Owner-confirmed" — declared by the owner
-   - "Standard default declared by owner" — accepted but not independently verified
-   - "Open question" — not yet resolved
+════════════════════════════════════════════
+DETECTED INTENTS
+════════════════════════════════════════════
 
-5. NEVER treat current broad firewall access as permanently justified.
-   Current broad access ≠ final intended design.
+{json.dumps(context["intents"], indent=2, ensure_ascii=False)}
 
-6. If a port/protocol is documented in the YAML port_protocol_matrix, do NOT say it is undocumented.
+════════════════════════════════════════════
+DETECTED ENTITIES
+════════════════════════════════════════════
 
-7. If something is local-only (e.g. Nginx → local portal process on the same host), state that clearly — it does not need an inter-host firewall rule.
+{json.dumps(context["entities"], indent=2, ensure_ascii=False)}
 
-8. If multiple assets or zones are involved, address each one separately.
+════════════════════════════════════════════
+RETRIEVER FOCUS
+════════════════════════════════════════════
 
-9. If the question is broader than the documented model supports, state the limitation.
+{json.dumps(context["focus"], indent=2, ensure_ascii=False)}
 
-10. Keep the answer practical, structured, and concise. Use clear section headings.
+════════════════════════════════════════════
+STRUCTURED FACTS
+════════════════════════════════════════════
+
+{json.dumps(context["structured_facts"], indent=2, ensure_ascii=False)}
+
+════════════════════════════════════════════
+DOCUMENTED CONTROL REFERENCES
+════════════════════════════════════════════
+
+{json.dumps(context["control_references"], indent=2, ensure_ascii=False)}
+
+════════════════════════════════════════════
+RETRIEVED RAG CHUNKS
+════════════════════════════════════════════
+
+{json.dumps(context["rag_chunks"], indent=2, ensure_ascii=False)}
+
+════════════════════════════════════════════
+REQUIRED ANSWER METHOD
+════════════════════════════════════════════
+
+You must produce an answer using the following discipline:
+
+A) Start with a direct answer.
+
+B) Then separate the answer into clearly labeled sections when relevant:
+
+- Current documented state
+- Environment evidence
+- Required operational state
+- Target intended state{standards_instruction}{external_instruction}
+- Unresolved uncertainty
+- Risk owner
+- Bottom line / auditor conclusion
+
+C) Use these section rules carefully:
+
+- "Current documented state" = what is explicitly documented now
+- "Environment evidence" = concrete supporting evidence from the local environment knowledge base
+- "Required operational state" = what appears necessary for normal operation
+- "Target intended state" = what the target posture says should exist later{section_rules_extra}
+- "Unresolved uncertainty" = what is still missing or not fully confirmed
+- "Risk owner" = who should own remediation of the issue; use narrower owner only if documented, otherwise use the provided domain owner fallback
+- "Bottom line / auditor conclusion" = concise internal conclusion grounded in local evidence
+
+D) LOCAL-FIRST RULES:
+
+- Always check the full local documented knowledge base before treating a point as absent.
+- Do NOT move to external guidance merely because a detail is absent from YAML alone.
+- If the issue is evaluative and local control references are present, use them first.
+- If the issue is evaluative and local control references are missing or insufficient, you may use trusted external standards or guidance when answer_mode allows it.{answer_mode_extra}
+
+E) STRICT INTERNAL / EXTERNAL SEPARATION RULES:
+
+- Do NOT place external citations, external claims, or externally-supported statements inside:
+  - Current documented state
+  - Environment evidence
+  - Required operational state
+  - Target intended state
+  - Unresolved uncertainty
+  - Risk owner
+  - Bottom line / auditor conclusion"""
+
+    + ("""
+  - Relevant documented control expectations
+  - Why this conflicts / may conflict / may not conflict""" if include_standards_section else "") + (
+"""
+- Those sections must be grounded only in:
+  - structured facts
+  - retrieved internal RAG context
+  - documented internal control references
+  - documented domain metadata
+""" if include_standards_section else """
+- Those sections must be grounded only in:
+  - structured facts
+  - retrieved internal RAG context
+  - documented domain metadata
+"""
+    ) + ("""
+- External sources may appear ONLY inside:
+  - External trusted guidance
+""" if include_external_section else "") + """
+
+- In the "Bottom line / auditor conclusion" section, summarize the internal conclusion only.
+  Do NOT attach external citations there.
+
+F) Answer mode rules:
+
+- If mode = "internal_only":
+  - answer from local documented knowledge only
+  - do not add external guidance
+- If mode = "internal_plus_external":
+  - answer from internal documented knowledge first
+  - then add a separate external trusted guidance section
+  - use external guidance especially when local standards are missing or insufficient
+  - make clear that external guidance is not part of the internal KB
+- If mode = "external_verification":
+  - start from internal documented facts
+  - then explicitly check whether trusted external guidance generally supports or cautions against the same pattern
+  - never claim external guidance proves internal implementation details
+""" + ("""
+G) Standards evaluation rules:
+
+- Use documented internal control references first.
+- If they do not exist or do not cover the question sufficiently, external trusted standards may be used when answer_mode allows it.
+- Do not imply compliance has been achieved unless the context unusually supports that conclusion.
+- Prefer careful phrases such as:
+  - "appears misaligned"
+  - "likely inconsistent with"
+  - "not yet supported as aligned"
+  - "insufficient evidence to confirm alignment"
+""" if include_standards_section else "") + """
+
+H) Evidence rule:
+
+- Evaluative claims must cite environment evidence from the local KB.
+- Do not give standards-based criticism without connecting it to a documented local condition.
+
+I) Risk owner rule:
+
+- If a narrower owner is not documented, use the domain owner fallback provided in the context.
+- If ownership is uncertain, say so clearly and then provide the most defensible fallback owner.
+
+J) Citation rule:
+
+- Internal sections should not contain web citations.
+- External web citations should appear only in the "External trusted guidance" section.
+
+K) Quality target:
+- practical
+- precise
+- non-generic
+- audit-oriented
+- well-structured
+- grounded
+{inventory_extra}
+Now answer the question.
 """
 
 
 # ════════════════════════════════════════════════════════════════
-#  Main Answer Pipeline
+#  Main Answer Path
 # ════════════════════════════════════════════════════════════════
 
 def answer_question(model: dict, alias_map: dict, question: str):
-    """
-    Full pipeline: question → context → prompt → LLM → answer.
-    Returns: (answer, prompt, context)
-    """
     context = build_context(model, alias_map, question)
     prompt = build_prompt(context)
-    answer = real_llm_response(prompt)
+
+    allow_web_search = context["answer_mode"]["mode"] in {
+        "internal_plus_external",
+        "external_verification",
+    }
+
+    answer = real_llm_response(prompt, allow_web_search=allow_web_search)
     return answer, prompt, context
 
 
@@ -570,7 +1092,7 @@ def main():
     model = load_model()
     alias_map = build_alias_map(model)
 
-    print("Network AI Agent v8 (Hybrid YAML + RAG + LLM)")
+    print("Network AI Agent v8 (advanced hybrid orchestration, new knowledge architecture)")
     print("Type a question, or type 'exit' to quit.\n")
 
     while True:
@@ -590,20 +1112,37 @@ def main():
             if show_debug == "y":
                 print("\n--- INTENTS ---")
                 print(context["intents"])
+
+                print("\n--- ANSWER MODE ---")
+                print(json.dumps(context["answer_mode"], indent=2, ensure_ascii=False))
+
+                print("\n--- RESPONSE STYLE ---")
+                print(json.dumps(context["response_style"], indent=2, ensure_ascii=False))
+
+                print("\n--- RISK OWNER ---")
+                print(json.dumps(context["risk_owner"], indent=2, ensure_ascii=False))
+
                 print("\n--- ENTITIES ---")
                 print(json.dumps(context["entities"], indent=2, ensure_ascii=False))
+
                 print("\n--- FOCUS ---")
                 print(json.dumps(context["focus"], indent=2, ensure_ascii=False))
+
                 print(f"\n--- RAG CHUNKS ({len(context['rag_chunks'])}) ---")
-                for c in context["rag_chunks"]:
-                    print(f"  {c['chunk_id']}: {c['chunk_type']:15s} | {c['section_title'][:50]}")
+                for chunk in context["rag_chunks"]:
+                    chunk_id = chunk.get("chunk_id")
+                    chunk_type = chunk.get("chunk_type", "")
+                    section_title = chunk.get("section_title", "")
+                    print(f"  {chunk_id}: {chunk_type:20s} | {section_title[:60]}")
+
                 print("\n--- STRUCTURED FACTS KEYS ---")
                 for key in context["structured_facts"]:
-                    val = context["structured_facts"][key]
-                    if isinstance(val, dict):
-                        print(f"  {key}: {{ {', '.join(val.keys())} }}")
+                    value = context["structured_facts"][key]
+                    if isinstance(value, dict):
+                        print(f"  {key}: {{ {', '.join(value.keys())} }}")
                     else:
-                        print(f"  {key}: {type(val).__name__}")
+                        print(f"  {key}: {type(value).__name__}")
+
                 print("\n" + "=" * 60 + "\n")
 
                 show_prompt = input("Show full prompt? (y/n): ").strip().lower()

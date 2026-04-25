@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Network Domain Agent</title>
+    <title>AI Auditor Workbench</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -365,8 +365,8 @@
 </head>
 <body>
     <div class="page">
-        <h1>AI Network Domain Agent</h1>
-        <p class="subtitle">Environment-aware reasoning over a documented homelab network domain</p>
+        <h1>AI Auditor Workbench</h1>
+        <p class="subtitle">Reasoning, comparison, and retrieval analysis over documented knowledge domains</p>
 
         <div class="panel">
             <label for="agentSelect">Select Agent Version</label>
@@ -381,7 +381,7 @@
             <div class="controls-row">
                 <div>
                     <label for="question">Question</label>
-                    <input type="text" id="question" placeholder="Ask a network question..." />
+                    <input type="text" id="question" placeholder="Ask a question about the documented environment..." />
                 </div>
                 <div>
                     <label for="topK">Top K</label>
@@ -583,9 +583,10 @@
                             '<div class="result-line"><strong>source_file:</strong> ' + escapeHtml(result.source_file) + '</div>' +
                             '<div class="result-line"><strong>section_title:</strong> ' + escapeHtml(result.section_title) + '</div>' +
                             '<div class="result-line"><strong>entities:</strong> ' + escapeHtml((result.entities || []).join(', ')) + '</div>' +
-                            '<div class="result-line"><strong>zones:</strong> ' + escapeHtml((result.zones || []).join(', ')) + '</div>' +
-                            '<div class="result-line"><strong>flow_assets:</strong> ' + escapeHtml((result.flow_assets || []).join(', ')) + '</div>' +
-                            '<div class="result-line"><strong>confidence_tags:</strong> ' + escapeHtml((result.confidence_tags || []).join(', ')) + '</div>' +
+                            '<div class="result-line"><strong>scope units:</strong> ' + escapeHtml((result.scope_units || []).join(', ')) + '</div>' +
+                            '<div class="result-line"><strong>flow entities:</strong> ' + escapeHtml((result.flow_entities || []).join(', ')) + '</div>' +
+                            '<div class="result-line"><strong>flow scope units:</strong> ' + escapeHtml((result.flow_scope_units || []).join(', ')) + '</div>' +
+                            '<div class="result-line"><strong>confidence tags:</strong> ' + escapeHtml((result.confidence_tags || []).join(', ')) + '</div>' +
                             '<div class="result-line"><strong>preview:</strong> ' + escapeHtml(result.text_preview) + '</div>' +
                         '</div>';
                 });
@@ -599,46 +600,46 @@
                     '</div>' +
 
                     '<div class="subsection">' +
-                        '<div class="subsection-title">Focus: zones</div>' +
-                        renderListPills(analysis.focus.zones) +
+                        '<div class="subsection-title">Focus: scope units</div>' +
+                        renderListPills((analysis.focus || {}).scope_units || []) +
                     '</div>' +
 
                     '<div class="subsection">' +
-                        '<div class="subsection-title">Focus: direct assets</div>' +
-                        renderListPills(analysis.focus.direct_assets) +
+                        '<div class="subsection-title">Focus: direct entities</div>' +
+                        renderListPills((analysis.focus || {}).direct_entities || []) +
                     '</div>' +
 
                     '<div class="subsection">' +
-                        '<div class="subsection-title">Focus: zone-expanded assets</div>' +
-                        renderListPills(analysis.focus.zone_assets) +
+                        '<div class="subsection-title">Focus: scope-expanded entities</div>' +
+                        renderListPills((analysis.focus || {}).scope_expanded_entities || []) +
                     '</div>' +
 
                     '<div class="subsection">' +
-                        '<div class="subsection-title">Focus: dependency-expanded assets</div>' +
-                        renderListPills(analysis.focus.dep_assets) +
+                        '<div class="subsection-title">Focus: dependency-expanded entities</div>' +
+                        renderListPills((analysis.focus || {}).dep_entities || []) +
                     '</div>' +
 
                     '<div class="subsection">' +
-                        '<div class="subsection-title">Focus: all assets</div>' +
-                        renderListPills(analysis.focus.all_assets) +
+                        '<div class="subsection-title">Focus: all entities</div>' +
+                        renderListPills((analysis.focus || {}).all_entities || []) +
                     '</div>' +
 
                     '<div class="subsection">' +
                         '<div class="subsection-title">Type distribution</div>' +
-                        renderTypePills(analysis.summary.type_counts) +
+                        renderTypePills((analysis.summary || {}).type_counts || {}) +
                     '</div>' +
 
                     '<div class="subsection">' +
                         '<div class="subsection-title">Summary flags</div>' +
                         '<div class="kv-list">' +
-                            '<span class="kv-pill">results=' + escapeHtml(analysis.summary.result_count) + '</span>' +
-                            '<span class="kv-pill">low_value=' + escapeHtml(analysis.summary.low_value_count) + '</span>' +
-                            '<span class="kv-pill">port_matrix=' + escapeHtml(analysis.summary.has_port_matrix) + '</span>' +
-                            '<span class="kv-pill">flows=' + escapeHtml(analysis.summary.has_flows) + '</span>' +
-                            '<span class="kv-pill">blocked_flows=' + escapeHtml(analysis.summary.has_blocked_flows) + '</span>' +
-                            '<span class="kv-pill">open_questions=' + escapeHtml(analysis.summary.has_open_questions) + '</span>' +
-                            '<span class="kv-pill">target_intent=' + escapeHtml(analysis.summary.has_target_intent) + '</span>' +
-                            '<span class="kv-pill">dependencies=' + escapeHtml(analysis.summary.has_dependencies) + '</span>' +
+                            '<span class="kv-pill">results=' + escapeHtml((analysis.summary || {}).result_count ?? 0) + '</span>' +
+                            '<span class="kv-pill">low_value=' + escapeHtml((analysis.summary || {}).low_value_count ?? 0) + '</span>' +
+                            '<span class="kv-pill">technical_matrix=' + escapeHtml((analysis.summary || {}).has_technical_matrix ?? false) + '</span>' +
+                            '<span class="kv-pill">required_flows=' + escapeHtml((analysis.summary || {}).has_required_flows ?? false) + '</span>' +
+                            '<span class="kv-pill">unnecessary_access=' + escapeHtml((analysis.summary || {}).has_unnecessary_access ?? false) + '</span>' +
+                            '<span class="kv-pill">open_questions=' + escapeHtml((analysis.summary || {}).has_open_questions ?? false) + '</span>' +
+                            '<span class="kv-pill">target_intent=' + escapeHtml((analysis.summary || {}).has_target_intent ?? false) + '</span>' +
+                            '<span class="kv-pill">dependencies=' + escapeHtml((analysis.summary || {}).has_dependencies ?? false) + '</span>' +
                         '</div>' +
                     '</div>' +
 

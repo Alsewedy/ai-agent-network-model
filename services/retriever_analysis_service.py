@@ -42,11 +42,11 @@ def import_retriever_modules():
 
 def normalize_focus(focus: dict) -> dict:
     return {
-        "zones": focus.get("zones", []),
-        "direct_assets": focus.get("direct_assets", []),
-        "zone_assets": focus.get("zone_assets", []),
-        "dep_assets": focus.get("dep_assets", []),
-        "all_assets": focus.get("all_assets", []),
+        "scope_units": focus.get("scope_units", []),
+        "direct_entities": focus.get("direct_entities", []),
+        "scope_expanded_entities": focus.get("scope_expanded_entities", []),
+        "dep_entities": focus.get("dep_entities", []),
+        "all_entities": focus.get("all_entities", []),
     }
 
 
@@ -54,16 +54,16 @@ def build_summary_flags(results: list[tuple[int, dict]]) -> dict:
     types = [chunk.get("chunk_type", "general") for _, chunk in results]
     type_counts = dict(Counter(types).most_common())
 
-    low_value_types = {"zones_assets", "services", "evidence"}
+    low_value_types = {"scope_units", "services", "evidence_notes"}
     low_value_count = sum(1 for t in types if t in low_value_types)
 
     return {
         "result_count": len(results),
         "type_counts": type_counts,
         "low_value_count": low_value_count,
-        "has_port_matrix": type_counts.get("port_matrix", 0) > 0,
-        "has_flows": type_counts.get("flows", 0) > 0,
-        "has_blocked_flows": type_counts.get("blocked_flows", 0) > 0,
+        "has_technical_matrix": type_counts.get("technical_matrix", 0) > 0,
+        "has_required_flows": type_counts.get("required_flows", 0) > 0,
+        "has_unnecessary_access": type_counts.get("unnecessary_access", 0) > 0,
         "has_open_questions": type_counts.get("open_questions", 0) > 0,
         "has_target_intent": type_counts.get("target_intent", 0) > 0,
         "has_dependencies": type_counts.get("dependencies", 0) > 0,
@@ -82,8 +82,9 @@ def serialize_results(results: list[tuple[int, dict]]) -> list[dict]:
             "source_file": chunk.get("source_file"),
             "section_title": chunk.get("section_title"),
             "entities": chunk.get("entities", []),
-            "zones": chunk.get("zones", []),
-            "flow_assets": chunk.get("flow_assets", []),
+            "scope_units": chunk.get("scope_units", []),
+            "flow_entities": chunk.get("flow_entities", []),
+            "flow_scope_units": chunk.get("flow_scope_units", []),
             "confidence_tags": chunk.get("confidence_tags", []),
             "text_preview": chunk.get("text", "")[:500],
         })
@@ -123,26 +124,24 @@ def analyze_with_v2(v2_module, question: str, top_k: int):
 
 def build_diagnostics(question: str, analyses: list[dict]) -> list[dict]:
     diagnostics = []
-
     normalized_question = question.lower()
 
     for item in analyses:
         version = item["version_label"]
         summary = item["summary"]
-        intents = set(item["intents"])
         notes = []
 
         if "transition plan" in normalized_question or "least-privilege" in normalized_question:
-            if not summary["has_port_matrix"]:
-                notes.append("No port_matrix chunks were retrieved for a transition-style question.")
-            if not summary["has_blocked_flows"]:
-                notes.append("No blocked_flows chunks were retrieved for a transition-style question.")
+            if not summary["has_technical_matrix"]:
+                notes.append("No technical_matrix chunks were retrieved for a transition-style question.")
+            if not summary["has_unnecessary_access"]:
+                notes.append("No unnecessary_access chunks were retrieved for a transition-style question.")
             if not summary["has_target_intent"]:
                 notes.append("No target_intent chunks were retrieved for a transition-style question.")
 
         if "unresolved" in normalized_question or "not fully confirmed" in normalized_question:
             if not summary["has_open_questions"]:
-                notes.append("No open_questions chunks were retrieved for an unresolved-style question.")
+                notes.append("No open_questions chunks were retrieved for an uncertainty-style question.")
 
         if "depend" in normalized_question:
             if not summary["has_dependencies"]:

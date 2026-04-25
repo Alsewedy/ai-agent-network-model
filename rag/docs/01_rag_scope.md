@@ -1,41 +1,191 @@
-# Phase 4 – RAG Scope
+# RAG Scope
 
 ## Purpose
-This document defines which files are included in the first Hybrid YAML + RAG implementation.
+Define the role of RAG in the current knowledge architecture.
 
-The goal is to use RAG only for environment knowledge retrieval, not for agent-planning documents.
+RAG is used to retrieve **supporting markdown context** for the agent.
+It is not the primary source of truth for the environment.
 
----
+The primary source of truth remains the structured knowledge in:
+- `knowledge/index.yaml`
+- `knowledge/domains/network/domain.yaml`
+- `knowledge/domains/network/model.yaml`
+- `knowledge/standards/mappings/control_references.yaml`
 
-## Files included in RAG
-- `knowledge/network_domain/01_zones_and_assets.md`
-- `knowledge/network_domain/02_services.md`
-- `knowledge/network_domain/03_dependencies.md`
-- `knowledge/network_domain/04_required_flows.md`
-- `knowledge/network_domain/04a_port_and_protocol_matrix.md`
-- `knowledge/network_domain/04b_evidence_notes.md`
-- `knowledge/network_domain/05_blocked_or_unnecessary_flows.md`
-- `knowledge/network_domain/06_open_questions_and_assumptions.md`
-- `knowledge/network_domain/07_target_security_intent.md`
+RAG exists to improve explanation, nuance, traceability, and contextual recall from markdown documentation.
 
 ---
 
-## Files excluded from RAG for now
-- `knowledge/network_domain/08_structured_network_model.yaml`
-- `docs/agent_design/09_agent_input_design.md`
-- `docs/agent_design/10_agent_test_questions.md`
-- `docs/agent_design/11_agent_answer_style.md`
-- `docs/agent_design/12_agent_logic_v1.md`
-- `docs/agent_design/13_agent_mvp_definition.md`
-- `docs/agent_design/14_agent_execution_plan.md`
+## Core Principle
+
+The knowledge architecture is intentionally split into two layers:
+
+### 1. Structured Knowledge Layer
+This layer is used for:
+- direct fact lookup
+- entity placement
+- dependency lookup
+- required communication lookup
+- technical matrix lookup
+- unnecessary access lookup
+- target intent lookup
+- open question lookup
+- standards reference lookup
+
+This layer is authoritative.
+
+### 2. Markdown Retrieval Layer
+This layer is used for:
+- human-readable explanation
+- contextual detail
+- narrative clarification
+- section-level supporting evidence
+- richer wording around already documented facts
+
+This layer is supportive, not authoritative.
 
 ---
 
-## Reasoning
-The included files describe the documented network environment itself.
+## What RAG Should Include
 
-The excluded files are:
-- structured source-of-truth files,
-- or project/planning files about how the agent should work.
+RAG should include markdown files from the documented network domain only.
 
-The first RAG layer should retrieve environment knowledge only.
+Current source set:
+- `knowledge/domains/network/scope/scope_units.md`
+- `knowledge/domains/network/scope/services.md`
+- `knowledge/domains/network/scope/dependencies.md`
+- `knowledge/domains/network/communication/required_flows.md`
+- `knowledge/domains/network/communication/technical_matrix.md`
+- `knowledge/domains/network/evidence/evidence_notes.md`
+- `knowledge/domains/network/posture/unnecessary_access.md`
+- `knowledge/domains/network/posture/target_intent.md`
+- `knowledge/domains/network/uncertainty/open_questions.md`
+
+These files are suitable for chunking because they contain:
+- headings
+- explanations
+- flow descriptions
+- rationale
+- uncertainty wording
+- supporting narrative
+
+---
+
+## What RAG Should NOT Include
+
+RAG should not include the following structured files:
+
+- `knowledge/index.yaml`
+- `knowledge/domains/network/domain.yaml`
+- `knowledge/domains/network/model.yaml`
+- `knowledge/standards/mappings/control_references.yaml`
+
+These files should remain outside RAG because they are:
+- already structured
+- easy to query directly
+- better used through structured retrieval
+- not improved by being turned into free-text chunks
+
+---
+
+## Why Structured Files Stay Outside RAG
+
+The project intentionally avoids flattening everything into one retrieval system.
+
+If structured YAML is pushed into RAG:
+- direct fact lookup becomes less reliable
+- ambiguity increases
+- exact fields become harder to control
+- fact vs context separation becomes weaker
+
+Keeping structured data outside RAG preserves:
+- precision
+- controllability
+- architectural clarity
+- cleaner reasoning
+
+---
+
+## Role of RAG in Agent Reasoning
+
+RAG should be used after structured retrieval, not before it.
+
+The expected order is:
+
+1. read structured facts
+2. identify relevant markdown context
+3. retrieve supporting chunks
+4. use chunks to enrich explanation
+5. keep structured facts as the final authority
+
+This means:
+- RAG can support the answer,
+- but RAG should not override structured knowledge.
+
+---
+
+## RAG and Audit Reasoning
+
+RAG is especially useful for questions that need:
+- explanation of why a flow exists
+- extra context around broad access
+- narrative detail around target posture
+- open question wording
+- evidence-style reasoning support
+
+Examples:
+- Why does this access appear broader than intended?
+- What does the posture narrative say about this segment?
+- What uncertainty is documented here?
+- What wording supports this concern?
+
+These are exactly the kinds of questions where chunk retrieval adds value.
+
+---
+
+## RAG and Standards
+
+The standards layer is not currently part of RAG.
+
+`control_references.yaml` is intentionally handled as structured comparison input rather than free-text retrieval material.
+
+This keeps standards usage:
+- explicit
+- structured
+- limited
+- and easier to reason about
+
+RAG may later be extended with additional standards-related markdown only if a separate architecture decision is made.
+That is not the current design.
+
+---
+
+## RAG Scope Boundary
+
+The current RAG scope is limited to the `network` domain only.
+
+It does not yet cover:
+- identity domain knowledge
+- application domain knowledge
+- cloud domain knowledge
+- multi-domain cross-retrieval
+- generalized enterprise policy libraries
+
+This is intentional.
+The current goal is to make one domain work well before expanding.
+
+---
+
+## Final Scope Summary
+
+RAG is used to retrieve markdown-based supporting context for the documented network domain.
+
+It is not:
+- the source of truth,
+- a replacement for structured YAML,
+- or a general-purpose search layer over the whole project.
+
+It is:
+- a supporting retrieval layer,
+- focused on markdown context,
+- designed to strengthen explanation and reasoning around structured facts.

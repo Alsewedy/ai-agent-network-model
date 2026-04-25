@@ -1,0 +1,244 @@
+# ═══════════════════════════════════════════════════════════════
+#  Control References
+# ═══════════════════════════════════════════════════════════════
+#
+#  Lightweight reference layer for the AI auditor agent.
+#
+#  PURPOSE:
+#    Provide structured external control expectations so the
+#    agent can compare the environment against known standards.
+#
+#  THIS FILE DOES NOT CONTAIN:
+#    - pass/fail judgments
+#    - compliant/non-compliant statements
+#    - findings or gap conclusions
+#    - risk levels
+#    - any verdict about the current environment
+#
+#  The AI auditor uses this as INPUT for reasoning, not as
+#  a pre-written audit report.
+#
+# ═══════════════════════════════════════════════════════════════
+
+# ─── HOW TO ADD CONTROLS ───────────────────────────────────────
+#
+# Copy the template block below for each control reference.
+# Only add controls that are relevant to the documented environment.
+# Group by framework for readability.
+#
+# ─── TEMPLATE ──────────────────────────────────────────────────
+#
+# - framework: "[e.g., CIS, NIST 800-53, ISO 27001, ACSC Essential Eight]"
+#   control_id: "[e.g., CIS 4.1, AC-3, A.9.1.2]"
+#   title: "[short title]"
+#   expectation: "[plain-English description of what this control expects]"
+#   relevant_domains: ["network", "active_directory"]
+#   relevant_scope_units: ["APP_ZONE", "LAN / DATA"]
+#   typical_evidence:
+#     - "[what an auditor would look for, e.g., firewall rule review]"
+#     - "[e.g., access control list documentation]"
+#   notes: "[optional context about applicability]"
+
+controls:
+  # ───────────────────────────────────────────────────────────
+  # CIS Controls v8
+  # ───────────────────────────────────────────────────────────
+  - framework: "CIS Controls v8"
+    control_id: "CIS 12.11"
+    title: "Network Segmentation"
+    expectation: "The environment should separate systems into security zones based on trust, function, and sensitivity, and should avoid broad trust between segments when narrower communication paths are sufficient."
+    relevant_domains: ["network"]
+    relevant_scope_units: ["LAN", "APP_ZONE", "SERVICE_ZONE", "DMZ_ZONE", "MGMT_SEGMENT", "ADMIN_SEGMENT", "EMPLOYEE_SEGMENT", "GUEST_SEGMENT", "WAN"]
+    typical_evidence:
+      - "Network segmentation design"
+      - "Firewall rule review between scope units"
+      - "Documented list of permitted inter-segment flows"
+    notes: "Highly relevant for reviewing broad zone-to-zone access, least-privilege transitions, and whether trust boundaries are explicit."
+
+  - framework: "CIS Controls v8"
+    control_id: "CIS 6.7"
+    title: "Controlled Administrative Access"
+    expectation: "Administrative access should be limited to approved systems, approved targets, approved protocols, and clearly justified tasks rather than broad any-to-any reachability."
+    relevant_domains: ["network"]
+    relevant_scope_units: ["ADMIN_SEGMENT", "MGMT_SEGMENT", "LAN"]
+    typical_evidence:
+      - "Administrative access policy"
+      - "Firewall rules for admin paths"
+      - "Allowed management target list"
+      - "Approved management protocol list"
+    notes: "Directly relevant to Admin laptop reachability, MGMT_SEGMENT policy, and controlled management-path design."
+
+  - framework: "CIS Controls v8"
+    control_id: "CIS 12.3"
+    title: "Separate Wireless or Less-Trusted Networks from Internal Networks"
+    expectation: "Lower-trust or user-oriented segments should be restricted from broad access into higher-trust internal networks unless specific operational requirements justify that access."
+    relevant_domains: ["network"]
+    relevant_scope_units: ["EMPLOYEE_SEGMENT", "GUEST_SEGMENT", "LAN", "APP_ZONE", "SERVICE_ZONE", "MGMT_SEGMENT"]
+    typical_evidence:
+      - "Inter-segment access restrictions"
+      - "Guest and employee network firewall policy"
+      - "Documented exceptions for internal resource access"
+    notes: "Useful when reviewing whether employee or guest paths are overly broad relative to internal services."
+
+  - framework: "CIS Controls v8"
+    control_id: "CIS 4.4"
+    title: "Implement and Manage Host-Based Firewall or Equivalent Filtering"
+    expectation: "Servers and sensitive systems should only expose the specific services required for their role, and unnecessary service exposure should be minimized."
+    relevant_domains: ["network"]
+    relevant_scope_units: ["APP_ZONE", "SERVICE_ZONE", "DMZ_ZONE", "MGMT_SEGMENT"]
+    typical_evidence:
+      - "Host firewall policy"
+      - "Allowed service list per system"
+      - "Port exposure review"
+    notes: "Supports reasoning about exact service exposure, especially where broad connectivity should be reduced to specific ports and services."
+
+  - framework: "CIS Controls v8"
+    control_id: "CIS 13.2"
+    title: "Centralize Security Event Alerting and Logging"
+    expectation: "Administrative paths, sensitive service access, and unusual cross-segment reachability should be observable and reviewable through centralized logging or equivalent monitoring."
+    relevant_domains: ["network"]
+    relevant_scope_units: ["ADMIN_SEGMENT", "MGMT_SEGMENT", "APP_ZONE", "SERVICE_ZONE", "DMZ_ZONE"]
+    typical_evidence:
+      - "Firewall logging"
+      - "Administrative access logs"
+      - "Proxy logs"
+      - "Monitoring or SIEM integration"
+    notes: "Useful when evaluating whether privileged or inter-zone access is auditable."
+
+  - framework: "CIS Controls v8"
+    control_id: "CIS 12.6"
+    title: "Use Secure Network Management and Communication"
+    expectation: "Sensitive service-to-service communication and infrastructure management communication should follow approved and controlled paths rather than broad implicit trust."
+    relevant_domains: ["network"]
+    relevant_scope_units: ["MGMT_SEGMENT", "SERVICE_ZONE", "APP_ZONE", "LAN"]
+    typical_evidence:
+      - "Documented management paths"
+      - "Restricted service-to-service rules"
+      - "Allowed communication matrix"
+    notes: "Useful for reviewing management-plane design and sensitive internal service communication."
+
+  # ───────────────────────────────────────────────────────────
+  # NIST SP 800-53 Rev. 5
+  # ───────────────────────────────────────────────────────────
+  - framework: "NIST SP 800-53 Rev. 5"
+    control_id: "AC-3"
+    title: "Access Enforcement"
+    expectation: "The environment should enforce approved authorizations for logical access to systems and services rather than rely on broad default trust."
+    relevant_domains: ["network"]
+    relevant_scope_units: ["APP_ZONE", "SERVICE_ZONE", "DMZ_ZONE", "MGMT_SEGMENT", "ADMIN_SEGMENT", "LAN"]
+    typical_evidence:
+      - "Firewall rule sets"
+      - "Access control policy"
+      - "Documented allowlist for inter-system communication"
+    notes: "A core control for reasoning about whether current access is broader than the documented operational need."
+
+  - framework: "NIST SP 800-53 Rev. 5"
+    control_id: "AC-6"
+    title: "Least Privilege"
+    expectation: "Systems, administrators, and services should operate with only the minimum access necessary to perform required functions."
+    relevant_domains: ["network"]
+    relevant_scope_units: ["APP_ZONE", "SERVICE_ZONE", "DMZ_ZONE", "MGMT_SEGMENT", "ADMIN_SEGMENT"]
+    typical_evidence:
+      - "Least-privilege design notes"
+      - "Restricted administrative access paths"
+      - "Service-to-service allowlist"
+    notes: "One of the most important controls for evaluating broad access, unnecessary reachability, and over-permissioned management paths."
+
+  - framework: "NIST SP 800-53 Rev. 5"
+    control_id: "AC-17"
+    title: "Remote Access"
+    expectation: "Administrative or remote-style access should use explicitly authorized, controlled, and monitored paths rather than undefined broad access."
+    relevant_domains: ["network"]
+    relevant_scope_units: ["ADMIN_SEGMENT", "MGMT_SEGMENT", "WAN"]
+    typical_evidence:
+      - "Remote/admin access path design"
+      - "Allowed admin source-to-target mapping"
+      - "Monitoring of administrative sessions"
+    notes: "Useful for questions involving Admin laptop, management reachability, and whether broad admin access is justified."
+
+  - framework: "NIST SP 800-53 Rev. 5"
+    control_id: "CA-3"
+    title: "System Interconnections"
+    expectation: "Connections between systems and segments should be explicitly identified, justified, and controlled according to business or operational need."
+    relevant_domains: ["network"]
+    relevant_scope_units: ["APP_ZONE", "SERVICE_ZONE", "DMZ_ZONE", "LAN", "MGMT_SEGMENT"]
+    typical_evidence:
+      - "System interconnection documentation"
+      - "Required flows list"
+      - "Technical communication matrix"
+    notes: "Strongly supports review of required flows versus broad inter-segment trust."
+
+  - framework: "NIST SP 800-53 Rev. 5"
+    control_id: "SC-7"
+    title: "Boundary Protection"
+    expectation: "The environment should monitor and control communications at trust boundaries and should avoid unnecessary or overly broad communication across those boundaries."
+    relevant_domains: ["network"]
+    relevant_scope_units: ["WAN", "DMZ_ZONE", "APP_ZONE", "SERVICE_ZONE", "LAN", "MGMT_SEGMENT", "ADMIN_SEGMENT"]
+    typical_evidence:
+      - "Boundary firewall rules"
+      - "Allowed ingress and egress design"
+      - "Cross-zone communication review"
+    notes: "Highly relevant to WAN/DMZ protection, inter-zone trust reduction, and explicit enforcement at network boundaries."
+
+  - framework: "NIST SP 800-53 Rev. 5"
+    control_id: "SC-7(5)"
+    title: "Boundary Protection | Deny by Default / Allow by Exception"
+    expectation: "Boundary protection should follow a deny-by-default mindset, allowing only specific approved communications that are explicitly required."
+    relevant_domains: ["network"]
+    relevant_scope_units: ["APP_ZONE", "SERVICE_ZONE", "DMZ_ZONE", "LAN", "MGMT_SEGMENT", "ADMIN_SEGMENT", "WAN"]
+    typical_evidence:
+      - "Default-deny firewall policy"
+      - "Approved exception list"
+      - "Documented justification for allowed flows"
+    notes: "Very relevant for least-privilege allowlist questions and transition-plan reasoning."
+
+  - framework: "NIST SP 800-53 Rev. 5"
+    control_id: "SC-7(9)"
+    title: "Boundary Protection | Restrict Threatening Outbound Communications"
+    expectation: "Outbound access should be limited to approved paths and destinations, especially where proxy-mediated egress or other controlled egress points are part of the architecture."
+    relevant_domains: ["network"]
+    relevant_scope_units: ["APP_ZONE", "DMZ_ZONE", "LAN", "EMPLOYEE_SEGMENT"]
+    typical_evidence:
+      - "Proxy enforcement design"
+      - "Outbound filtering rules"
+      - "Documented controlled egress path"
+    notes: "Directly relevant to PROXY01 and any reasoning about outbound Internet access."
+
+  # ───────────────────────────────────────────────────────────
+  # ISO/IEC 27001:2022 (reference-friendly layer)
+  # ───────────────────────────────────────────────────────────
+  - framework: "ISO/IEC 27001:2022"
+    control_id: "A.5.15"
+    title: "Access Control"
+    expectation: "Access to information systems and services should be controlled according to business and security requirements, with unnecessary access removed."
+    relevant_domains: ["network"]
+    relevant_scope_units: ["APP_ZONE", "SERVICE_ZONE", "MGMT_SEGMENT", "ADMIN_SEGMENT", "LAN"]
+    typical_evidence:
+      - "Access control policy"
+      - "Documented restrictions for privileged and service access"
+      - "Review of unnecessary access entries"
+    notes: "Useful as a broad governance-oriented control reference when the agent needs internal-vs-target access comparison."
+
+  - framework: "ISO/IEC 27001:2022"
+    control_id: "A.8.20"
+    title: "Network Security"
+    expectation: "Networks and network services should be secured, controlled, and aligned with operational requirements rather than broad convenience access."
+    relevant_domains: ["network"]
+    relevant_scope_units: ["LAN", "APP_ZONE", "SERVICE_ZONE", "DMZ_ZONE", "MGMT_SEGMENT", "ADMIN_SEGMENT", "WAN"]
+    typical_evidence:
+      - "Network design documentation"
+      - "Allowed communication model"
+      - "Boundary and segmentation review"
+    notes: "Useful as a high-level network security reference across most scope-unit reviews."
+
+  - framework: "ISO/IEC 27001:2022"
+    control_id: "A.8.21"
+    title: "Security of Network Services"
+    expectation: "Network services and their access paths should be defined, justified, and controlled according to the environment’s operational need and security posture."
+    relevant_domains: ["network"]
+    relevant_scope_units: ["APP_ZONE", "SERVICE_ZONE", "DMZ_ZONE", "MGMT_SEGMENT"]
+    typical_evidence:
+      - "Service communication matrix"
+      - "Documented service dependencies"
+      - "Restricted management and service paths"
+    notes: "Particularly useful for service-to-service reasoning, management-plane reasoning, and explicit communication-path review."

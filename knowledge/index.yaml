@@ -1,0 +1,26 @@
+# ═══════════════════════════════════════════════════════════════
+#  Knowledge Base Index
+# ═══════════════════════════════════════════════════════════════
+#
+#  Lightweight overview of the entire knowledge base.
+#  Helps the AI agent understand what domains exist, their
+#  status, and where to look for cross-domain information.
+#
+#  Update this file whenever a domain is added, updated, or
+#  when standards mappings change.
+#
+# ═══════════════════════════════════════════════════════════════
+
+knowledge_base:
+  last_full_review: null  # e.g., "2025-04-01"
+  total_domains: 1
+
+  domains:
+    - name: "network"
+      path: "domains/network"
+      last_updated: null
+      open_questions_count: 8
+      standards_mapped: true
+
+  standards_available:
+    - "standards/mappings/control_references.yaml"

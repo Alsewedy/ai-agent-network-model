@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Callable, Any
+from typing import Callable
 
 from agents import agent_v6
 from agents import agent_v7
@@ -63,38 +63,41 @@ AGENTS: dict[str, AgentDefinition] = {
         agent_id="v6",
         label="v6 – Structured Baseline Agent",
         description=(
-            "A conservative YAML-first baseline agent that uses structured facts "
-            "as the primary source of truth and simple Markdown snippets as "
-            "supporting context."
+            "A conservative structured-first baseline agent for the new knowledge "
+            "architecture. It relies primarily on model.yaml and other structured "
+            "domain knowledge, with no RAG retrieval layer."
         ),
         strengths=[
             "Simple baseline reference",
-            "Strong YAML grounding",
+            "Strong structured grounding",
+            "Low retrieval complexity",
             "Conservative answer behavior",
         ],
         limitations=[
-            "Uses simple snippet extraction",
             "No dedicated RAG retrieval layer",
+            "Less contextual richness than v7 and v8",
+            "Weaker orchestration than v8",
         ],
         load_runtime=_load_v6_runtime,
         answer=_answer_v6,
     ),
     "v7": AgentDefinition(
         agent_id="v7",
-        label="v7 – Hybrid YAML + RAG Agent",
+        label="v7 – Hybrid Structured + RAG Agent",
         description=(
-            "A hybrid agent that keeps YAML as the primary source of truth while "
-            "using retrieved RAG chunks instead of direct Markdown snippets for "
-            "supporting context."
+            "A hybrid agent for the new knowledge architecture that keeps structured "
+            "facts as the primary source of truth while using retrieved RAG chunks "
+            "as supporting context."
         ),
         strengths=[
+            "Structured-first grounding",
             "Dedicated RAG retrieval layer",
-            "Richer supporting context",
-            "Better scalability than v6",
+            "Richer supporting context than v6",
+            "Good middle-ground complexity",
         ],
         limitations=[
-            "Less refined than v8",
-            "Still an earlier hybrid version",
+            "Less refined orchestration than v8",
+            "Still simpler than the advanced multi-intent agent",
         ],
         load_runtime=_load_v7_runtime,
         answer=_answer_v7,
@@ -103,19 +106,20 @@ AGENTS: dict[str, AgentDefinition] = {
         agent_id="v8",
         label="v8 – Advanced Hybrid Orchestration Agent",
         description=(
-            "The current tuned version with multi-intent reasoning, dynamic "
-            "retrieval scaling, improved entity handling, and a stronger prompt "
-            "structure."
+            "The most advanced version for the new knowledge architecture. It uses "
+            "multi-intent reasoning, dynamic retrieval scaling, richer entity and "
+            "service handling, stronger orchestration, and better context assembly."
         ),
         strengths=[
             "Multi-intent reasoning",
-            "Dynamic top-k scaling",
+            "Dynamic retrieval scaling",
             "Better service/entity handling",
-            "Improved prompt orchestration",
+            "Richer orchestration and context assembly",
+            "Best support for complex audit-style questions",
         ],
         limitations=[
-            "More complex than earlier versions",
-            "Still depends on file-based retrieval rather than full vector RAG",
+            "More complex than v6 and v7",
+            "Heavier prompt/context construction",
         ],
         load_runtime=_load_v8_runtime,
         answer=_answer_v8,

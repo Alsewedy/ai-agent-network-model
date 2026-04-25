@@ -1,0 +1,816 @@
+# ═══════════════════════════════════════════════════════════════
+#  Network – Structured Model
+# ═══════════════════════════════════════════════════════════════
+#
+#  Machine-readable consolidation of structured facts.
+#  The AI agent's PRIMARY source for direct lookups.
+#
+#  RULES:
+#    - Only structured, queryable facts go here
+#    - Narrative and reasoning stay in markdown
+#    - Confidence tags mandatory for technical entries
+#    - No verdict language (see _meta/RULES.md Rule 9)
+#
+#  SECTIONS:
+#    Core (always): domain, scope_units, entities, dependencies,
+#                   posture, open_questions, metadata
+#    Optional:      communication, technical_matrix
+#
+# ═══════════════════════════════════════════════════════════════
+
+domain:
+  name: "network"
+  scope: "Segmented homelab network domain"
+  status: "active"
+  notes:
+    - "Structured consolidation of domain knowledge."
+    - "Primary source for agent structured lookups."
+
+
+# ═══════════════════════════════════════════════════════════════
+#  CORE SECTIONS (always required)
+# ═══════════════════════════════════════════════════════════════
+
+# ─── SCOPE UNITS ───────────────────────────────────────────────
+# Source: scope/scope_units.md
+
+scope_units:
+  - name: "WAN"
+    identifier: null
+    purpose: "External connectivity through pfSense"
+    entities:
+      - "Firewall01"
+
+  - name: "LAN"
+    identifier: "Subnet: 192.168.128.0/24 | Gateway: 192.168.128.1"
+    purpose: "Core internal infrastructure"
+    entities:
+      - "DC01-CYBERAUDIT"
+      - "DB01"
+
+  - name: "APP_ZONE"
+    identifier: "Subnet: 192.168.20.0/24 | Gateway: 192.168.20.1"
+    purpose: "Main application servers"
+    entities:
+      - "APP01"
+      - "APP02"
+
+  - name: "DMZ_ZONE"
+    identifier: "Subnet: 192.168.10.0/24 | Gateway: 192.168.10.1"
+    purpose: "Proxy services and controlled outbound access"
+    entities:
+      - "PROXY01"
+
+  - name: "SERVICE_ZONE"
+    identifier: "Subnet: 192.168.30.0/24 | Gateway: 192.168.30.1"
+    purpose: "Identity and access management services"
+    entities:
+      - "IAM01"
+
+  - name: "MGMT_SEGMENT"
+    identifier: "Subnet: 192.168.50.0/24 | Gateway: 192.168.50.1"
+    purpose: "Infrastructure management network"
+    entities:
+      - "ESXi"
+      - "Switch Management"
+
+  - name: "ADMIN_SEGMENT"
+    identifier: "Subnet: 192.168.60.0/24 | Gateway: 192.168.60.1"
+    purpose: "Administrative workstations and privileged access devices"
+    entities:
+      - "Admin laptop"
+
+  - name: "EMPLOYEE_SEGMENT"
+    identifier: "Subnet: 192.168.70.0/24 | Gateway: 192.168.70.1"
+    purpose: "Internal employee network segment for normal workstation-style systems"
+    entities: []
+
+  - name: "GUEST_SEGMENT"
+    identifier: "Subnet: 192.168.80.0/24 | Gateway: 192.168.80.1"
+    purpose: "Guest or untrusted access network segment"
+    entities: []
+
+
+# ─── ENTITIES ──────────────────────────────────────────────────
+# Source: scope/services.md
+
+entities:
+  - name: "Firewall01"
+    scope_unit: "WAN"
+    type: "firewall"
+    services:
+      - "network_firewalling"
+      - "inter-zone routing"
+      - "default gateway"
+    purpose: "Central firewall and routing point for the segmented environment"
+
+  - name: "DC01-CYBERAUDIT"
+    scope_unit: "LAN"
+    type: "domain_controller"
+    services:
+      - "Active Directory"
+      - "Internal DNS"
+      - "Time service"
+    purpose: "Internal directory foundation for the cyberaudit.local domain, internal name resolution, and time-related services"
+
+  - name: "DB01"
+    scope_unit: "LAN"
+    type: "database_and_secrets_host"
+    services:
+      - "MariaDB database services"
+      - "Vault"
+    purpose: "Hosts the MariaDB layer for the SAAMS environment and Vault for secrets and certificate retrieval"
+
+  - name: "APP01"
+    scope_unit: "APP_ZONE"
+    type: "application_server"
+    services:
+      - "Customer-facing web portal"
+      - "Nginx reverse proxy"
+      - "TLS termination for portal access"
+    purpose: "Hosts the customer-facing portal and the Nginx reverse proxy layer that listens on HTTPS and forwards traffic to the local portal process"
+
+  - name: "APP02"
+    scope_unit: "APP_ZONE"
+    type: "application_server"
+    services:
+      - "Internal employee audit application"
+    purpose: "Hosts the internal C# employee audit application used for the internal workflow"
+
+  - name: "IAM01"
+    scope_unit: "SERVICE_ZONE"
+    type: "identity_and_api_server"
+    services:
+      - "Keycloak IAM"
+      - "Internal API"
+    purpose: "Central identity and access management platform for customer and internal authentication, and host of the internal API used for internal workflow integration"
+
+  - name: "PROXY01"
+    scope_unit: "DMZ_ZONE"
+    type: "proxy_server"
+    services:
+      - "Forward proxy"
+      - "Controlled outbound access"
+    purpose: "Dedicated egress-related system for structured outbound Internet access"
+
+  - name: "ESXi"
+    scope_unit: "MGMT_SEGMENT"
+    type: "virtualization_host"
+    services:
+      - "Virtualization host management"
+    purpose: "Hosts the lab virtual machines and supports infrastructure management"
+
+  - name: "Switch Management"
+    scope_unit: "MGMT_SEGMENT"
+    type: "network_management_interface"
+    services:
+      - "Switch administration"
+    purpose: "Management interface for the Cisco switch infrastructure"
+
+  - name: "Admin laptop"
+    scope_unit: "ADMIN_SEGMENT"
+    type: "administrative_workstation"
+    services:
+      - "Administrative access workstation"
+    purpose: "Used for privileged administrative access to the environment"
+
+
+# ─── DEPENDENCIES ──────────────────────────────────────────────
+# Source: scope/dependencies.md
+
+dependencies:
+  - entity: "DC01-CYBERAUDIT"
+    depends_on:
+      - "PROXY01"
+
+  - entity: "DB01"
+    depends_on:
+      - "DC01-CYBERAUDIT"
+      - "PROXY01"
+
+  - entity: "APP01"
+    depends_on:
+      - "DC01-CYBERAUDIT"
+      - "IAM01"
+      - "DB01"
+      - "Vault on DB01"
+      - "Internal API on IAM01"
+      - "PROXY01"
+
+  - entity: "APP02"
+    depends_on:
+      - "DC01-CYBERAUDIT"
+      - "IAM01"
+      - "DB01"
+      - "Vault on DB01"
+      - "PROXY01"
+
+  - entity: "IAM01"
+    depends_on:
+      - "DC01-CYBERAUDIT"
+      - "DB01"
+      - "Vault on DB01"
+      - "PROXY01"
+
+  - entity: "PROXY01"
+    depends_on:
+      - "Firewall01"
+
+  - entity: "ESXi"
+    depends_on:
+      - "Firewall01"
+      - "Switch Management"
+
+  - entity: "Switch Management"
+    depends_on:
+      - "Firewall01"
+
+  - entity: "Admin laptop"
+    depends_on:
+      - "Firewall01"
+      - "Managed access to target systems"
+
+
+# ─── POSTURE ───────────────────────────────────────────────────
+# Source: posture/unnecessary_access.md + posture/target_intent.md
+
+unnecessary_access:
+  - access: "LAN → APP_ZONE broad access"
+    should_remain: false
+
+  - access: "LAN → SERVICE_ZONE broad access"
+    should_remain: false
+
+  - access: "LAN → DMZ_ZONE broad access"
+    should_remain: false
+
+  - access: "APP_ZONE → LAN broad access"
+    should_remain: false
+
+  - access: "APP_ZONE → SERVICE_ZONE broad access"
+    should_remain: false
+
+  - access: "APP_ZONE → DMZ_ZONE broad access"
+    should_remain: false
+
+  - access: "SERVICE_ZONE → LAN broad access"
+    should_remain: false
+
+  - access: "SERVICE_ZONE → APP_ZONE broad access"
+    should_remain: false
+
+  - access: "SERVICE_ZONE → DMZ_ZONE broad access"
+    should_remain: false
+
+  - access: "DMZ_ZONE → internal destinations broad access"
+    should_remain: false
+
+  - access: "Admin laptop → any destination"
+    should_remain: false
+
+  - access: "APP01 → entire SERVICE_ZONE"
+    should_remain: false
+
+  - access: "APP02 → entire SERVICE_ZONE"
+    should_remain: false
+
+  - access: "APP01 → entire LAN"
+    should_remain: false
+
+  - access: "APP02 → entire LAN"
+    should_remain: false
+
+  - access: "IAM01 → entire LAN"
+    should_remain: false
+
+  - access: "DB01 → broad access to DMZ_ZONE"
+    should_remain: false
+
+  - access: "DC01-CYBERAUDIT → broad access to DMZ_ZONE"
+    should_remain: false
+
+  - access: "MGMT_SEGMENT undefined access model"
+    should_remain: false
+
+  - access: "EMPLOYEE_SEGMENT undefined access model"
+    should_remain: false
+
+  - access: "GUEST_SEGMENT undefined access model"
+    should_remain: false
+
+  - access: "WAN inbound exposure"
+    should_remain: false
+
+target_intent:
+  general:
+    - "Move from broad build-phase connectivity to a more controlled and auditable least-privilege model."
+    - "Reduce unnecessary trust between scope units."
+    - "Allow only communication clearly justified by application, identity, management, or operational requirements."
+
+  per_scope_unit:
+    "WAN": "Inbound exposure should remain blocked by default unless there is a clearly justified future requirement."
+    "LAN": "LAN should remain a highly trusted infrastructure segment and should not be broadly reachable by other scope units."
+    "APP_ZONE": "APP_ZONE should host business application systems only and should not have broad trust into infrastructure or identity-related scope units."
+    "DMZ_ZONE": "DMZ_ZONE should remain narrow and controlled and should not become a broadly trusted transit area."
+    "SERVICE_ZONE": "SERVICE_ZONE should host identity-related services only and should not be treated as broadly trusted by applications or other internal scope units."
+    "MGMT_SEGMENT": "MGMT_SEGMENT should become the controlled management plane for infrastructure administration."
+    "ADMIN_SEGMENT": "ADMIN_SEGMENT should be used for privileged administration only and should not remain any-to-any in the final design."
+    "EMPLOYEE_SEGMENT": "EMPLOYEE_SEGMENT should represent normal internal user systems with only the minimum required access to internal services."
+    "GUEST_SEGMENT": "GUEST_SEGMENT should remain highly restricted and isolated from trusted internal services."
+
+  intended_alignment:
+    - scope_unit: "WAN"
+      framework: "CIS Controls v8"
+      control_id: "Network boundary protection and controlled external exposure"
+      relevance_note: "WAN is the main external boundary and should remain tightly controlled."
+
+    - scope_unit: "WAN"
+      framework: "NIST 800-53"
+      control_id: "Boundary protection principles"
+      relevance_note: "WAN-facing access should be explicitly justified and tightly scoped."
+
+    - scope_unit: "LAN"
+      framework: "CIS Controls v8"
+      control_id: "Least-privilege network access and segmentation"
+      relevance_note: "LAN contains critical infrastructure and should not be broadly reachable."
+
+    - scope_unit: "LAN"
+      framework: "NIST 800-53"
+      control_id: "Network segmentation and boundary protection principles"
+      relevance_note: "Access into LAN should be tightly scoped to required infrastructure services only."
+
+    - scope_unit: "APP_ZONE"
+      framework: "CIS Controls v8"
+      control_id: "Segmentation and application access minimization"
+      relevance_note: "Application systems should only reach required identity, database, secret, and proxy services."
+
+    - scope_unit: "APP_ZONE"
+      framework: "NIST 800-53"
+      control_id: "Least functionality and boundary protection principles"
+      relevance_note: "APP systems should not retain broad network trust."
+
+    - scope_unit: "DMZ_ZONE"
+      framework: "CIS Controls v8"
+      control_id: "Controlled network zones and minimization of unnecessary trust"
+      relevance_note: "DMZ services should be tightly scoped and not treated as broadly trusted internal paths."
+
+    - scope_unit: "DMZ_ZONE"
+      framework: "NIST 800-53"
+      control_id: "Boundary protection principles"
+      relevance_note: "DMZ should remain a controlled intermediary rather than a broadly reachable internal source."
+
+    - scope_unit: "SERVICE_ZONE"
+      framework: "CIS Controls v8"
+      control_id: "Protection of identity infrastructure and segmentation"
+      relevance_note: "Identity-related services should be treated as critical infrastructure and tightly scoped."
+
+    - scope_unit: "SERVICE_ZONE"
+      framework: "NIST 800-53"
+      control_id: "Access enforcement and boundary protection principles"
+      relevance_note: "Identity-related communication should be minimized to actual operational need."
+
+    - scope_unit: "MGMT_SEGMENT"
+      framework: "CIS Controls v8"
+      control_id: "Secure administrative infrastructure and management path restriction"
+      relevance_note: "Management traffic should be isolated and explicitly controlled."
+
+    - scope_unit: "MGMT_SEGMENT"
+      framework: "NIST 800-53"
+      control_id: "Least privilege and management access restriction principles"
+      relevance_note: "Management-plane reachability should be narrow, auditable, and purpose-specific."
+
+    - scope_unit: "ADMIN_SEGMENT"
+      framework: "CIS Controls v8"
+      control_id: "Controlled use of administrative privileges"
+      relevance_note: "Privileged administration should be limited and clearly justified."
+
+    - scope_unit: "ADMIN_SEGMENT"
+      framework: "NIST 800-53"
+      control_id: "Least privilege and privileged access restriction principles"
+      relevance_note: "Administrative access should be auditable and narrowed to defined needs."
+
+    - scope_unit: "EMPLOYEE_SEGMENT"
+      framework: "CIS Controls v8"
+      control_id: "User network segmentation and minimization of unnecessary access"
+      relevance_note: "Employee systems should not have broad reachability into sensitive infrastructure."
+
+    - scope_unit: "EMPLOYEE_SEGMENT"
+      framework: "NIST 800-53"
+      control_id: "Least privilege and internal segmentation principles"
+      relevance_note: "Standard user systems should have restricted access aligned with business need."
+
+    - scope_unit: "GUEST_SEGMENT"
+      framework: "CIS Controls v8"
+      control_id: "Network isolation for untrusted systems"
+      relevance_note: "Guest systems should remain separated from trusted internal infrastructure."
+
+    - scope_unit: "GUEST_SEGMENT"
+      framework: "NIST 800-53"
+      control_id: "Boundary protection and least privilege principles"
+      relevance_note: "Untrusted access should remain isolated and tightly controlled."
+
+    - scope_unit: "general"
+      framework: "CIS Controls v8"
+      control_id: "Protection of identity infrastructure"
+      relevance_note: "Identity services and their dependencies should be tightly scoped and not implied by broad allow rules."
+
+    - scope_unit: "general"
+      framework: "NIST 800-53"
+      control_id: "Access enforcement and trust-boundary principles"
+      relevance_note: "Trust relationships should be explicit and minimized."
+
+    - scope_unit: "general"
+      framework: "CIS Controls v8"
+      control_id: "Access minimization for sensitive services"
+      relevance_note: "Database and secret access should be reduced to exact operational need."
+
+    - scope_unit: "general"
+      framework: "NIST 800-53"
+      control_id: "Least privilege and protection of sensitive resources"
+      relevance_note: "Sensitive service access should be narrowly scoped and justified."
+
+    - scope_unit: "general"
+      framework: "CIS Controls v8"
+      control_id: "Controlled network egress"
+      relevance_note: "Outbound access should be mediated and restricted through designated paths."
+
+    - scope_unit: "general"
+      framework: "NIST 800-53"
+      control_id: "Boundary protection and controlled communications principles"
+      relevance_note: "Internet egress should not remain broad or unmanaged."
+
+    - scope_unit: "general"
+      framework: "CIS Controls v8"
+      control_id: "Controlled administrative access"
+      relevance_note: "Administrative paths should be limited to approved targets, protocols, and tasks."
+
+    - scope_unit: "general"
+      framework: "NIST 800-53"
+      control_id: "Privileged access restriction and accountability principles"
+      relevance_note: "Administrative access should be deliberate, bounded, and reviewable."
+
+    - scope_unit: "general"
+      framework: "CIS Controls v8"
+      control_id: "Secure baseline and minimization of unnecessary exposure"
+      relevance_note: "Broad temporary access should be reduced into a controlled least-privilege baseline."
+
+    - scope_unit: "general"
+      framework: "NIST 800-53"
+      control_id: "Configuration control and least functionality principles"
+      relevance_note: "Build-phase convenience should not become permanent trust."
+
+    - scope_unit: "general"
+      framework: "CIS Controls v8"
+      control_id: "Documented and reviewable security controls"
+      relevance_note: "The network model should support explainable and reviewable access decisions."
+
+    - scope_unit: "general"
+      framework: "NIST 800-53"
+      control_id: "Assessment, traceability, and security architecture principles"
+      relevance_note: "The environment should support meaningful comparison between current state and intended state."
+
+# ─── OPEN QUESTIONS ────────────────────────────────────────────
+# Source: uncertainty/open_questions.md
+
+open_questions:
+  - "What are the exact ports and protocols required for each confirmed dependency?"
+  - "Which of the currently broad inter-zone rules are still genuinely needed for the build phase, and which are already unnecessary?"
+  - "What should the final least-privilege communication model look like for LAN, APP_ZONE, SERVICE_ZONE, DMZ_ZONE, and ADMIN_SEGMENT?"
+  - "What exact management policy should apply to MGMT_SEGMENT in the final design?"
+  - "What exact access policy should apply to EMPLOYEE_SEGMENT in the final design?"
+  - "What exact access policy should apply to GUEST_SEGMENT in the final design?"
+  - "Should any WAN-facing exposure be introduced later, or should the environment remain without inbound WAN pass rules?"
+  - "What is the final desired restriction model for the Admin laptop?"
+
+
+# ═══════════════════════════════════════════════════════════════
+#  OPTIONAL SECTIONS (include only if applicable)
+# ═══════════════════════════════════════════════════════════════
+
+# ─── REQUIRED FLOWS ────────────────────────────────────────────
+# Source: communication/required_flows.md
+
+required_flows:
+  - source: "APP01"
+    destination: "IAM01"
+    purpose: "Customer authentication through Keycloak OIDC"
+
+  - source: "APP01"
+    destination: "DB01"
+    purpose: "Portal-side database access"
+
+  - source: "APP01"
+    destination: "Vault on DB01"
+    purpose: "Retrieve database credentials and client certificates"
+
+  - source: "APP01"
+    destination: "Internal API on IAM01"
+    purpose: "Create internal requests, retrieve status updates, and download final reports"
+
+  - source: "APP01"
+    destination: "PROXY01"
+    purpose: "Controlled outbound Internet access"
+
+  - source: "Nginx on APP01"
+    destination: "Local portal process on APP01"
+    purpose: "Reverse proxy forwarding from HTTPS listener to the local portal application"
+
+  - source: "APP02"
+    destination: "IAM01"
+    purpose: "Employee authentication through Keycloak Device Flow with MFA"
+
+  - source: "APP02"
+    destination: "DB01"
+    purpose: "Direct access to audit_system_db for internal audit workflow operations"
+
+  - source: "APP02"
+    destination: "Vault on DB01"
+    purpose: "Retrieve database credentials, certificates, and Keycloak-related configuration"
+
+  - source: "APP02"
+    destination: "PROXY01"
+    purpose: "Controlled outbound Internet access"
+
+  - source: "IAM01"
+    destination: "DC01-CYBERAUDIT"
+    purpose: "LDAP federation, DNS, and time-related dependency"
+
+  - source: "IAM01"
+    destination: "DB01"
+    purpose: "Internal API database access"
+
+  - source: "IAM01"
+    destination: "Vault on DB01"
+    purpose: "Retrieve database credentials and certificates for Internal API database access"
+
+  - source: "IAM01"
+    destination: "PROXY01"
+    purpose: "Controlled outbound Internet access"
+
+  - source: "DB01"
+    destination: "DC01-CYBERAUDIT"
+    purpose: "DNS and time-related dependency for the database and Vault host"
+
+  - source: "DB01"
+    destination: "PROXY01"
+    purpose: "Controlled outbound Internet access"
+
+  - source: "DC01-CYBERAUDIT"
+    destination: "PROXY01"
+    purpose: "Controlled outbound Internet access"
+
+  - source: "Admin laptop"
+    destination: "target systems"
+    purpose: "Privileged administration and management access into the environment"
+
+
+# ─── TECHNICAL MATRIX ──────────────────────────────────────────
+# Source: communication/technical_matrix.md
+# Confidence tag MANDATORY for every entry.
+
+technical_matrix:
+  - source: "Client / browser"
+    destination: "APP01"
+    service: "Nginx reverse proxy"
+    protocol: "HTTPS"
+    port: 443
+    direction: "inbound to APP01"
+    purpose: "Customer-facing secure access to the portal"
+    confidence: "confirmed"
+
+  - source: "Nginx on APP01"
+    destination: "Local portal process on APP01"
+    service: "Reverse proxy forwarding"
+    protocol: "HTTPS"
+    port: 3000
+    direction: "outbound from Nginx on APP01"
+    purpose: "Forward portal traffic from Nginx to the local Express application"
+    confidence: "confirmed"
+
+  - source: "APP01"
+    destination: "IAM01"
+    service: "Keycloak OIDC"
+    protocol: "HTTP"
+    port: 8080
+    direction: "outbound from APP01"
+    purpose: "Customer authentication and OIDC interaction"
+    confidence: "confirmed"
+
+  - source: "APP01"
+    destination: "DB01"
+    service: "MariaDB (saams_portal_db)"
+    protocol: "MySQL over TLS / mTLS"
+    port: 3307
+    direction: "outbound from APP01"
+    purpose: "Portal-side database access"
+    confidence: "confirmed"
+
+  - source: "APP01"
+    destination: "DB01"
+    service: "Vault"
+    protocol: "HTTP"
+    port: 8200
+    direction: "outbound from APP01"
+    purpose: "Retrieve database credentials and client certificates"
+    confidence: "confirmed"
+
+  - source: "APP01"
+    destination: "IAM01"
+    service: "Internal API"
+    protocol: "HTTP"
+    port: 9090
+    direction: "outbound from APP01"
+    purpose: "Create internal requests, retrieve status updates, and download reports"
+    confidence: "confirmed"
+
+  - source: "APP02"
+    destination: "IAM01"
+    service: "Keycloak Device Flow"
+    protocol: "HTTP"
+    port: 8080
+    direction: "outbound from APP02"
+    purpose: "Employee authentication through Device Flow and MFA"
+    confidence: "confirmed"
+
+  - source: "APP02"
+    destination: "DB01"
+    service: "MariaDB (audit_system_db)"
+    protocol: "MySQL over TLS / mTLS"
+    port: 3307
+    direction: "outbound from APP02"
+    purpose: "Internal audit workflow database access"
+    confidence: "confirmed"
+
+  - source: "APP02"
+    destination: "DB01"
+    service: "Vault"
+    protocol: "HTTP"
+    port: 8200
+    direction: "outbound from APP02"
+    purpose: "Retrieve database credentials, certificates, and Keycloak-related configuration"
+    confidence: "confirmed"
+
+  - source: "IAM01"
+    destination: "DB01"
+    service: "MariaDB (audit_system_db)"
+    protocol: "MySQL over TLS / mTLS"
+    port: 3307
+    direction: "outbound from IAM01"
+    purpose: "Internal API database access"
+    confidence: "confirmed"
+
+  - source: "IAM01"
+    destination: "DB01"
+    service: "Vault"
+    protocol: "HTTP"
+    port: 8200
+    direction: "outbound from IAM01"
+    purpose: "Retrieve database credentials and certificates for Internal API database access"
+    confidence: "confirmed"
+
+  - source: "IAM01"
+    destination: "DC01-CYBERAUDIT"
+    service: "DNS"
+    protocol: "UDP"
+    port: 53
+    direction: "outbound from IAM01"
+    purpose: "Internal name resolution"
+    confidence: "confirmed"
+
+  - source: "IAM01"
+    destination: "DC01-CYBERAUDIT"
+    service: "LDAP federation"
+    protocol: "TCP"
+    port: 389
+    direction: "outbound from IAM01"
+    purpose: "Active Directory federation for Keycloak"
+    confidence: "standard_default"
+
+  - source: "IAM01"
+    destination: "DC01-CYBERAUDIT"
+    service: "Time / NTP"
+    protocol: "UDP"
+    port: 123
+    direction: "outbound from IAM01"
+    purpose: "Time synchronization"
+    confidence: "standard_default"
+
+  - source: "APP01"
+    destination: "DC01-CYBERAUDIT"
+    service: "DNS"
+    protocol: "UDP"
+    port: 53
+    direction: "outbound from APP01"
+    purpose: "Internal name resolution"
+    confidence: "confirmed"
+
+  - source: "APP01"
+    destination: "DC01-CYBERAUDIT"
+    service: "Time / NTP"
+    protocol: "UDP"
+    port: 123
+    direction: "outbound from APP01"
+    purpose: "Time synchronization"
+    confidence: "standard_default"
+
+  - source: "APP02"
+    destination: "DC01-CYBERAUDIT"
+    service: "DNS"
+    protocol: "UDP"
+    port: 53
+    direction: "outbound from APP02"
+    purpose: "Internal name resolution"
+    confidence: "confirmed"
+
+  - source: "APP02"
+    destination: "DC01-CYBERAUDIT"
+    service: "Time / NTP"
+    protocol: "UDP"
+    port: 123
+    direction: "outbound from APP02"
+    purpose: "Time synchronization"
+    confidence: "standard_default"
+
+  - source: "DB01"
+    destination: "DC01-CYBERAUDIT"
+    service: "DNS"
+    protocol: "UDP"
+    port: 53
+    direction: "outbound from DB01"
+    purpose: "Internal name resolution"
+    confidence: "confirmed"
+
+  - source: "DB01"
+    destination: "DC01-CYBERAUDIT"
+    service: "Time / NTP"
+    protocol: "UDP"
+    port: 123
+    direction: "outbound from DB01"
+    purpose: "Time synchronization"
+    confidence: "standard_default"
+
+  - source: "DC01-CYBERAUDIT"
+    destination: "PROXY01"
+    service: "Outbound proxy path"
+    protocol: "HTTP proxy"
+    port: 3128
+    direction: "outbound from DC01-CYBERAUDIT"
+    purpose: "Controlled Internet egress"
+    confidence: "confirmed"
+
+  - source: "DB01"
+    destination: "PROXY01"
+    service: "Outbound proxy path"
+    protocol: "HTTP proxy"
+    port: 3128
+    direction: "outbound from DB01"
+    purpose: "Controlled Internet egress"
+    confidence: "confirmed"
+
+  - source: "APP01"
+    destination: "PROXY01"
+    service: "Outbound proxy path"
+    protocol: "HTTP proxy"
+    port: 3128
+    direction: "outbound from APP01"
+    purpose: "Controlled Internet egress"
+    confidence: "confirmed"
+
+  - source: "APP02"
+    destination: "PROXY01"
+    service: "Outbound proxy path"
+    protocol: "HTTP proxy"
+    port: 3128
+    direction: "outbound from APP02"
+    purpose: "Controlled Internet egress"
+    confidence: "confirmed"
+
+  - source: "IAM01"
+    destination: "PROXY01"
+    service: "Outbound proxy path"
+    protocol: "HTTP proxy"
+    port: 3128
+    direction: "outbound from IAM01"
+    purpose: "Controlled Internet egress"
+    confidence: "confirmed"
+
+  - source: "Admin laptop"
+    destination: "target systems"
+    service: "Administrative access"
+    protocol: "Broad open access"
+    port: "Any"
+    direction: "outbound from Admin laptop"
+    purpose: "Current privileged administration model"
+    confidence: "owner_confirmed"
+
+
+# ═══════════════════════════════════════════════════════════════
+#  METADATA (always required)
+# ═══════════════════════════════════════════════════════════════
+
+metadata:
+  confidence_model:
+    confirmed: "Verified through code, config, observation, or capture"
+    owner_confirmed: "Declared by the environment owner"
+    standard_default: "Industry-standard value accepted by the owner"
+    open_question: "Unresolved — must not be treated as fact"

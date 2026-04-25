@@ -1,100 +1,94 @@
 """
-retrieve_chunks_v2.py – Connectivity-aware RAG retriever for network hardening questions.
+retrieve_chunks_v2.py – Advanced connectivity-aware retriever for the new network knowledge architecture.
 
-Key design changes from v1:
-  1. ENTITY-GRAPH EXPANSION: When a zone is mentioned, expand to all assets in
-     that zone, then use flow_assets metadata to find all flow chunks touching
-     those assets.
-  2. CONNECTIVITY SCORING: Flow chunks are scored by how many focus assets they
-     connect, with bonus for covering asset pairs not yet in the result set.
-  3. DYNAMIC QUOTAS: For complex intents such as transition_plan, port_matrix
-     and flow quotas scale with the number of relevant flows.
-  4. COVERAGE-AWARE SELECTION: The selector tracks which asset pairs are already
-     covered and prioritizes chunks that add new coverage.
-  5. OPEN QUESTION RELEVANCE: For unresolved intents, open_questions chunks are
-     scored by textual overlap with the question's zone and asset focus.
+Key design goals:
+  1. Use model.yaml from the new knowledge structure.
+  2. Build focus from detected entities and scope units.
+  3. Expand from scope units to their entities, then to dependency targets.
+  4. Score chunks using entity connectivity, scope relevance, and intent-aware weighting.
+  5. Return both retrieved chunks and metadata (intents + focus) for advanced agents.
 """
 
 import json
 import re
 from pathlib import Path
 from collections import defaultdict
+
 import yaml
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 CHUNKS_FILE = PROJECT_ROOT / "rag" / "chunks.json"
-YAML_FILE = PROJECT_ROOT / "knowledge" / "network_domain" / "08_structured_network_model.yaml"
+MODEL_FILE = PROJECT_ROOT / "knowledge" / "domains" / "network" / "model.yaml"
 
 
-KNOWN_ASSETS = [
-    "APP01", "APP02", "IAM01", "DB01", "DC01-CYBERAUDIT",
-    "PROXY01", "Firewall01", "ESXi", "Switch Management",
-    "Admin laptop", "Vault", "Internal API", "Keycloak",
-]
-
-KNOWN_ZONES = [
-    "WAN", "LAN / DATA", "APP_ZONE", "DMZ_ZONE",
-    "SERVICE_ZONE", "MGMT", "ADMIN", "EMPLOYEE", "GUEST",
-]
-
-# Intents and their trigger phrases
 INTENT_KEYWORDS = {
     "transition_plan": [
-        "transition plan", "least-privilege transition plan",
-        "final least-privilege transition plan", "hardening plan",
-        "tighten", "final design", "final intended design",
-    ],
-    "allow_list": [
-        "allow list", "least privilege allow list", "least privilege",
-        "must remain open", "keep open", "required access",
-    ],
-    "ports_protocols": ["port", "ports", "protocol", "protocols"],
-    "blocked": [
-        "broad access", "broad trust", "remove", "should be removed",
-        "should not remain", "blocked",
-    ],
-    "unresolved": [
-        "unresolved", "open question", "open questions",
-        "not fully confirmed", "needs confirmation",
-        "block final firewall hardening", "block final enforcement",
-        "still needs confirmation", "blocker", "blockers",
-    ],
-    "target_intent": [
-        "target intent", "target security intent",
-        "aligned", "final intended design",
-    ],
-    "dependencies": [
-        "depend", "dependencies", "rely on", "depends on",
+        "transition plan", "least privilege transition plan", "least-privilege transition plan",
+        "hardening plan", "tighten", "final design", "final intended design",
     ],
     "required_flows": [
-        "required flow", "required flows", "must remain",
-        "normal operation", "keep working",
-        "must remain for", "flows that must remain",
+        "required flow", "required flows", "required communication",
+        "must remain open", "must remain", "keep working", "allow list",
     ],
-    "local_only": [
-        "local-only", "local only", "host-internal", "host internal",
-        "not inter-host", "inter-host firewall rules", "local portal process",
+    "technical_details": [
+        "port", "ports", "protocol", "protocols", "endpoint", "technical",
     ],
-    "owner_declared": [
-        "owner-declared", "owner declared",
-        "owner-confirmed", "owner confirmed", "defaults",
+    "overly_broad_access": [
+        "broad access", "too open", "overly broad", "unnecessary access",
+        "should not remain broad", "broader than intended",
+    ],
+    "target_posture": [
+        "target posture", "intended posture", "target intent", "final design", "intended",
+    ],
+    "uncertainty": [
+        "unresolved", "open question", "open questions", "not fully confirmed",
+        "uncertain", "needs confirmation", "assumption", "blocker",
+    ],
+    "dependencies": [
+        "depend", "dependencies", "depends on", "rely on",
+    ],
+    "standards_comparison": [
+        "standard", "standards", "policy", "least privilege",
+        "segmentation", "boundary protection", "control expectations",
+    ],
+    "external_guidance": [
+        "best practice", "external guidance", "outside my kb", "not in my files",
     ],
 }
 
-# Chunk types that are considered low-value filler for complex queries
-LOW_VALUE_TYPES = {"zones_assets", "services", "evidence"}
-
-# Section titles that indicate filler content
+LOW_VALUE_TYPES = {"scope_units", "services", "evidence_notes"}
 FILLER_TITLE_PATTERNS = [
-    "document introduction", "purpose", "main assets by zone", "notes",
+    "document introduction", "purpose", "modeling rule", "notes",
 ]
 
 
-# ─── Normalization ───────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────
+# Loading
+# ──────────────────────────────────────────────────────────────
+
+def load_chunks():
+    with open(CHUNKS_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def load_model():
+    with open(MODEL_FILE, "r", encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+
+    if not isinstance(data, dict):
+        raise ValueError(f"Expected model.yaml root to be a dictionary, got: {type(data)}")
+
+    return data
+
+
+# ──────────────────────────────────────────────────────────────
+# Normalization
+# ──────────────────────────────────────────────────────────────
 
 def normalize(text: str) -> str:
     text = text.lower()
+    text = text.replace("→", " ")
     text = text.replace("->", " ")
     text = text.replace("/", " / ")
     text = re.sub(r"[^a-z0-9\s/_-]", " ", text)
@@ -106,126 +100,204 @@ def tokenize(text: str) -> set[str]:
     return set(normalize(text).split())
 
 
-# ─── Loading ─────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────
+# Model-aware aliases / detection
+# ──────────────────────────────────────────────────────────────
 
-def load_chunks():
-    with open(CHUNKS_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+def build_entity_aliases(model: dict) -> dict[str, str]:
+    aliases = {}
+
+    for entity in model.get("entities", []):
+        name = entity.get("name")
+        if not name:
+            continue
+
+        aliases[normalize(name)] = name
+
+        if name == "DC01-CYBERAUDIT":
+            aliases["dc01"] = name
+            aliases["domain controller"] = name
+
+        if name == "Admin laptop":
+            aliases["laptop"] = name
+            aliases["admin laptop"] = name
+
+        if name == "Switch Management":
+            aliases["switch"] = name
+            aliases["switch management"] = name
+
+        if name == "PROXY01":
+            aliases["proxy"] = name
+            aliases["proxy01"] = name
+
+        if name == "IAM01":
+            aliases["iam"] = name
+            aliases["iam01"] = name
+
+        if name == "DB01":
+            aliases["db"] = name
+            aliases["db01"] = name
+
+    aliases["vault"] = "Vault"
+    aliases["internal api"] = "Internal API"
+    aliases["keycloak"] = "Keycloak"
+    aliases["mariadb"] = "MariaDB"
+    aliases["dns"] = "DNS"
+    aliases["ntp"] = "NTP"
+
+    return aliases
 
 
-def load_model():
-    with open(YAML_FILE, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+def build_scope_unit_aliases(model: dict) -> dict[str, str]:
+    aliases = {}
+
+    for unit in model.get("scope_units", []):
+        name = unit.get("name")
+        if not name:
+            continue
+
+        aliases[normalize(name)] = name
+
+        if name == "LAN":
+            aliases["lan"] = name
+        if name == "APP_ZONE":
+            aliases["app zone"] = name
+            aliases["appzone"] = name
+        if name == "SERVICE_ZONE":
+            aliases["service zone"] = name
+            aliases["servicezone"] = name
+        if name == "DMZ_ZONE":
+            aliases["dmz"] = name
+            aliases["dmz zone"] = name
+        if name == "MGMT_SEGMENT":
+            aliases["mgmt"] = name
+            aliases["management segment"] = name
+        if name == "ADMIN_SEGMENT":
+            aliases["admin segment"] = name
+        if name == "EMPLOYEE_SEGMENT":
+            aliases["employee segment"] = name
+        if name == "GUEST_SEGMENT":
+            aliases["guest segment"] = name
+        if name == "WAN":
+            aliases["wan"] = name
+
+    return aliases
 
 
-# ─── Intent detection ────────────────────────────────────────────
+def detect_entities_and_scope_units(model: dict, question: str):
+    q = normalize(question)
+    entity_aliases = build_entity_aliases(model)
+    scope_aliases = build_scope_unit_aliases(model)
+
+    entities = []
+    scope_units = []
+
+    for alias, canonical in sorted(entity_aliases.items(), key=lambda x: len(x[0]), reverse=True):
+        pattern = r"(?:^|\s)" + re.escape(alias) + r"(?:\s|$)"
+        if re.search(pattern, q) and canonical not in entities:
+            entities.append(canonical)
+
+    for alias, canonical in sorted(scope_aliases.items(), key=lambda x: len(x[0]), reverse=True):
+        pattern = r"(?:^|\s)" + re.escape(alias) + r"(?:\s|$)"
+        if re.search(pattern, q) and canonical not in scope_units:
+            scope_units.append(canonical)
+
+    return entities, scope_units
+
+
+def expand_from_scope_units(model: dict, entities: list[str], scope_units: list[str]) -> list[str]:
+    expanded = list(entities)
+
+    for unit in model.get("scope_units", []):
+        if unit.get("name") in scope_units:
+            for entity_name in unit.get("entities", []) or []:
+                if entity_name not in expanded:
+                    expanded.append(entity_name)
+
+    return expanded
+
+
+def expand_from_dependencies(model: dict, entities: list[str]) -> list[str]:
+    dep_entities = []
+
+    for dep_entry in model.get("dependencies", []):
+        if dep_entry.get("entity") in entities:
+            for dep in dep_entry.get("depends_on", []):
+                if dep not in entities and dep not in dep_entities:
+                    dep_entities.append(dep)
+
+    return dep_entities
+
+
+def build_focus_set(model: dict, question: str) -> dict:
+    direct_entities, scope_units = detect_entities_and_scope_units(model, question)
+    scope_expanded_entities = expand_from_scope_units(model, direct_entities, scope_units)
+    dep_entities = expand_from_dependencies(model, scope_expanded_entities)
+
+    all_entities = list(scope_expanded_entities)
+    for entity_name in dep_entities:
+        if entity_name not in all_entities:
+            all_entities.append(entity_name)
+
+    return {
+        "direct_entities": direct_entities,
+        "scope_expanded_entities": scope_expanded_entities,
+        "dep_entities": dep_entities,
+        "all_entities": all_entities,
+        "scope_units": scope_units,
+    }
+
+
+# ──────────────────────────────────────────────────────────────
+# Intent detection
+# ──────────────────────────────────────────────────────────────
 
 def detect_intents(question: str) -> set[str]:
     q = normalize(question)
     found = set()
+
     for intent, patterns in INTENT_KEYWORDS.items():
-        for p in patterns:
-            if normalize(p) in q:
+        for pattern in patterns:
+            if normalize(pattern) in q:
                 found.add(intent)
                 break
 
-    # Derived expansions
     if "transition_plan" in found:
         found.update({
-            "allow_list", "blocked", "target_intent",
-            "required_flows", "unresolved", "ports_protocols",
+            "required_flows",
+            "technical_details",
+            "overly_broad_access",
+            "target_posture",
+            "uncertainty",
         })
-    if "allow_list" in found:
-        found.update({"ports_protocols", "required_flows"})
+
+    if "required_flows" in found:
+        found.add("technical_details")
+
     return found
 
 
-# ─── Entity/zone detection and expansion ─────────────────────────
+# ──────────────────────────────────────────────────────────────
+# Flow connectivity helpers
+# ──────────────────────────────────────────────────────────────
 
-def detect_assets_and_zones(question: str):
-    q = normalize(question)
-    assets = [a for a in KNOWN_ASSETS if normalize(a) in q]
-    zones = [z for z in KNOWN_ZONES if normalize(z) in q]
-    return assets, zones
+def chunk_touches_entities(chunk: dict, entity_set: set[str]) -> set[str]:
+    flow_entities = chunk.get("flow_entities", [])
+    if flow_entities:
+        return set(flow_entities) & entity_set
 
-
-def expand_from_zones(model: dict, assets: list[str], zones: list[str]):
-    """Expand zone mentions into their member assets."""
-    expanded_assets = list(assets)
-    for zone in model.get("zones", []):
-        if zone.get("name") in zones:
-            for asset_name in zone.get("assets", []):
-                if asset_name not in expanded_assets:
-                    expanded_assets.append(asset_name)
-    return expanded_assets
+    return set(chunk.get("entities", [])) & entity_set
 
 
-def expand_from_dependencies(model: dict, assets: list[str]) -> list[str]:
-    """
-    For each focus asset, find what it depends on from the YAML dependency graph.
-    Returns: list of additional assets that are dependency targets.
-    """
-    dep_assets = []
-    for dep_entry in model.get("dependencies", []):
-        if dep_entry.get("asset") in assets:
-            for d in dep_entry.get("depends_on", []):
-                name = d.get("name", d) if isinstance(d, dict) else d
-                if name not in assets and name not in dep_assets:
-                    dep_assets.append(name)
-    return dep_assets
+def chunk_touches_scope_units(chunk: dict, scope_unit_set: set[str]) -> set[str]:
+    flow_scope_units = chunk.get("flow_scope_units", [])
+    if flow_scope_units:
+        return set(flow_scope_units) & scope_unit_set
 
-
-def build_focus_set(model: dict, question: str) -> dict:
-    """
-    Build a complete focus set from the question.
-    Returns: {
-        "direct_assets": [...],     # explicitly mentioned
-        "zone_assets": [...],       # expanded from zones
-        "dep_assets": [...],        # dependency targets
-        "all_assets": [...],        # union
-        "zones": [...],
-    }
-    """
-    direct_assets, zones = detect_assets_and_zones(question)
-    zone_assets = expand_from_zones(model, direct_assets, zones)
-    # zone_assets already includes direct_assets
-    dep_assets = expand_from_dependencies(model, zone_assets)
-
-    all_assets = list(zone_assets)
-    for a in dep_assets:
-        if a not in all_assets:
-            all_assets.append(a)
-
-    return {
-        "direct_assets": direct_assets,
-        "zone_assets": zone_assets,
-        "dep_assets": dep_assets,
-        "all_assets": all_assets,
-        "zones": zones,
-    }
-
-
-# ─── Flow-graph connectivity ────────────────────────────────────
-
-def chunk_touches_assets(chunk: dict, asset_set: set[str]) -> set[str]:
-    """
-    Return which focus assets this chunk's flow_assets overlap with.
-    Uses flow_assets metadata if it exists in the chunk data.
-    Falls back to entity matching if flow_assets is empty.
-    """
-    flow_assets = chunk.get("flow_assets", [])
-    if flow_assets:
-        return set(flow_assets) & asset_set
-
-    # Fallback: entity matching
-    return set(chunk.get("entities", [])) & asset_set
+    return set(chunk.get("scope_units", [])) & scope_unit_set
 
 
 def chunk_flow_pair(chunk: dict) -> tuple[str, str] | None:
-    """
-    Extract a (source, destination) pair for coverage tracking.
-    Returns a normalized tuple or None.
-    """
     src = chunk.get("flow_source")
     dst = chunk.get("flow_destination")
     if src and dst:
@@ -236,132 +308,130 @@ def chunk_flow_pair(chunk: dict) -> tuple[str, str] | None:
     return None
 
 
-# ─── Scoring ─────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────
+# Dynamic scaling
+# ──────────────────────────────────────────────────────────────
 
-def score_chunk(
-    question: str,
-    chunk: dict,
-    focus: dict,
-    intents: set[str],
-) -> dict:
-    """
-    Score a chunk and return a breakdown dict for debuggability.
-    Returns: {"total": int, "breakdown": {category: points}}
-    """
+def compute_rag_params(intents: set[str]) -> dict:
+    if "transition_plan" in intents:
+        return {"top_k": 20, "max_chunks": 14}
+    if "standards_comparison" in intents or "overly_broad_access" in intents:
+        return {"top_k": 14, "max_chunks": 10}
+    if "technical_details" in intents or "required_flows" in intents:
+        return {"top_k": 12, "max_chunks": 10}
+    return {"top_k": 10, "max_chunks": 8}
+
+
+# ──────────────────────────────────────────────────────────────
+# Scoring
+# ──────────────────────────────────────────────────────────────
+
+def score_chunk(question: str, chunk: dict, focus: dict, intents: set[str]) -> dict:
     breakdown = defaultdict(int)
-    q_norm = normalize(question)
     q_tokens = tokenize(question)
 
     chunk_type = chunk.get("chunk_type", "general")
     section_title = normalize(chunk.get("section_title", ""))
     chunk_text_norm = normalize(chunk.get("text", ""))
-    entities = set(chunk.get("entities", []))
-    zones = set(chunk.get("zones", []))
 
-    focus_asset_set = set(focus["all_assets"])
-    zone_asset_set = set(focus["zone_assets"])
+    focus_entity_set = set(focus["all_entities"])
+    focus_scope_set = set(focus["scope_units"])
+    scope_expanded_entity_set = set(focus["scope_expanded_entities"])
 
-    # ── 1. TOKEN OVERLAP (low weight, tiebreaker) ──
+    # 1) token overlap
     chunk_tokens = tokenize(chunk.get("text", ""))
     overlap = len(q_tokens & chunk_tokens)
     breakdown["token_overlap"] = overlap * 1
 
-    # ── 2. TITLE MATCH ──
-    title_hits = sum(1 for t in q_tokens if t in section_title and len(t) > 2)
+    # 2) title match
+    title_hits = sum(1 for t in q_tokens if len(t) > 2 and t in section_title)
     breakdown["title_match"] = title_hits * 3
 
-    # ── 3. ENTITY CONNECTIVITY (the core improvement) ──
-    # How many focus assets does this chunk connect to?
-    touching = chunk_touches_assets(chunk, focus_asset_set)
-    zone_touching = chunk_touches_assets(chunk, zone_asset_set)
+    # 3) entity connectivity
+    touching_entities = chunk_touches_entities(chunk, focus_entity_set)
+    touching_scope_entities = chunk_touches_entities(chunk, scope_expanded_entity_set)
+    touching_scope_units = chunk_touches_scope_units(chunk, focus_scope_set)
 
-    if touching:
-        breakdown["entity_connectivity"] = len(touching) * 12
+    if touching_entities:
+        breakdown["entity_connectivity"] = len(touching_entities) * 12
 
-    # Bonus: chunk connects a zone-level focus asset (APP01/APP02) to a dep target
-    if len(zone_touching) >= 1 and len(touching) >= 2:
-        breakdown["cross_zone_flow"] = 15
+    if len(touching_scope_entities) >= 1 and len(touching_entities) >= 2:
+        breakdown["cross_entity_flow"] = 15
 
-    # ── 4. ZONE MATCH ──
-    zone_hits = set(focus["zones"]) & zones
-    if zone_hits:
-        breakdown["zone_match"] = len(zone_hits) * 10
+    # 4) scope-unit relevance
+    if touching_scope_units:
+        breakdown["scope_unit_match"] = len(touching_scope_units) * 10
 
-    # ── 5. INTENT-TO-TYPE ALIGNMENT ──
+    # 5) intent-type alignment
     intent_type_map = {
-        "port_matrix":    {"ports_protocols", "allow_list", "transition_plan", "required_flows"},
-        "flows":          {"required_flows", "allow_list", "transition_plan"},
-        "blocked_flows":  {"blocked", "transition_plan"},
-        "target_intent":  {"target_intent", "transition_plan"},
-        "open_questions": {"unresolved"},
-        "dependencies":   {"dependencies"},
+        "technical_matrix": {"technical_details", "required_flows", "transition_plan"},
+        "required_flows": {"required_flows", "transition_plan"},
+        "unnecessary_access": {"overly_broad_access", "transition_plan"},
+        "target_intent": {"target_posture", "standards_comparison", "transition_plan"},
+        "open_questions": {"uncertainty", "transition_plan"},
+        "dependencies": {"dependencies"},
     }
+
     for ctype, relevant_intents in intent_type_map.items():
         if chunk_type == ctype and (intents & relevant_intents):
             breakdown["intent_type_match"] = 20
             break
 
-    # ── 6. FLOW-SPECIFIC BONUSES ──
-    if chunk_type == "port_matrix":
-        # Core application flow: any chunk whose flow touches a zone asset
-        if zone_touching:
-            breakdown["pm_zone_asset"] = 18
+    # 6) communication-heavy bonuses
+    if chunk_type == "technical_matrix":
+        if touching_scope_entities:
+            breakdown["tm_scope_entity"] = 18
 
-        # Service flow (not DNS/NTP infrastructure)
         is_infra = any(kw in section_title for kw in ["dns", "time", "ntp"])
-        if zone_touching and not is_infra:
-            breakdown["pm_service_flow"] = 10
+        if touching_scope_entities and not is_infra:
+            breakdown["tm_service_flow"] = 10
 
-        # Owner-default penalty for transition plans
         conf_tags = [normalize(t) for t in chunk.get("confidence_tags", [])]
         if any("owner" in t or "default" in t for t in conf_tags):
-            if intents & {"transition_plan", "allow_list"}:
-                breakdown["pm_owner_default_penalty"] = -8
+            if intents & {"transition_plan", "required_flows"}:
+                breakdown["tm_owner_default_penalty"] = -8
 
-    if chunk_type == "flows":
-        if zone_touching and intents & {"transition_plan", "allow_list", "required_flows"}:
-            breakdown["flow_zone_relevance"] = 12
+    if chunk_type == "required_flows":
+        if touching_scope_entities and intents & {"transition_plan", "required_flows"}:
+            breakdown["rf_scope_relevance"] = 12
 
-    if chunk_type == "blocked_flows":
-        if zone_touching and intents & {"transition_plan", "blocked"}:
-            breakdown["blocked_zone_relevance"] = 14
+    if chunk_type == "unnecessary_access":
+        if touching_scope_entities or touching_scope_units:
+            if intents & {"transition_plan", "overly_broad_access"}:
+                breakdown["ua_focus_relevance"] = 14
+
         if "target state" in chunk_text_norm or "should remain broad" in chunk_text_norm:
             if "transition_plan" in intents:
-                breakdown["blocked_target_state"] = 8
+                breakdown["ua_target_state"] = 8
 
-    # ── 7. OPEN QUESTIONS RELEVANCE ──
-    if chunk_type == "open_questions":
-        if "unresolved" in intents:
-            # Reward chunks that actually contain open question content
-            oq_signals = ["open question", "unresolved", "assumption",
-                          "not fully confirmed", "block", "needs confirmation"]
-            if any(s in chunk_text_norm for s in oq_signals):
-                breakdown["oq_signal"] = 12
+    # 7) open questions relevance
+    if chunk_type == "open_questions" and "uncertainty" in intents:
+        oq_signals = [
+            "open question", "unresolved", "assumption",
+            "not fully confirmed", "needs confirmation", "blocker"
+        ]
+        if any(signal in chunk_text_norm for signal in oq_signals):
+            breakdown["oq_signal"] = 12
+            if touching_scope_entities or touching_scope_units:
+                breakdown["oq_focus_relevance"] = 10
+        else:
+            breakdown["oq_no_signal_penalty"] = -15
 
-                # Extra: does this open question mention focus zones/assets?
-                if zone_touching or (set(focus["zones"]) & zones):
-                    breakdown["oq_focus_relevance"] = 10
-            else:
-                # Confirmed facts section inside open_questions file → low value
-                breakdown["oq_no_signal_penalty"] = -15
-
-    # ── 8. TARGET INTENT RELEVANCE ──
+    # 8) target intent relevance
     if chunk_type == "target_intent":
-        ti_signals = ["target intent", "final model", "final design",
-                      "least privilege", "restricted"]
-        if any(s in section_title or s in chunk_text_norm for s in ti_signals):
+        ti_signals = ["target intent", "final design", "least privilege", "restricted"]
+        if any(signal in section_title or signal in chunk_text_norm for signal in ti_signals):
             breakdown["ti_signal"] = 8
-        # Does target intent chunk mention focus zones?
-        if set(focus["zones"]) & zones:
-            breakdown["ti_zone_match"] = 12
+        if touching_scope_units:
+            breakdown["ti_scope_match"] = 12
 
-    # ── 9. FILLER PENALTIES ──
-    is_filler_title = any(p in section_title for p in FILLER_TITLE_PATTERNS)
+    # 9) filler penalties
+    is_filler_title = any(pattern in section_title for pattern in FILLER_TITLE_PATTERNS)
     if is_filler_title:
         breakdown["filler_title_penalty"] = -20
 
     if chunk_type in LOW_VALUE_TYPES and intents & {
-        "transition_plan", "allow_list", "ports_protocols", "unresolved"
+        "transition_plan", "required_flows", "technical_details", "uncertainty"
     }:
         breakdown["low_value_type_penalty"] = -12
 
@@ -369,58 +439,48 @@ def score_chunk(
     return {"total": total, "breakdown": dict(breakdown)}
 
 
-# ─── Coverage-aware selection ────────────────────────────────────
+# ──────────────────────────────────────────────────────────────
+# Dynamic quotas / selection
+# ──────────────────────────────────────────────────────────────
 
 def compute_dynamic_quotas(intents: set[str], n_relevant_flows: int) -> dict:
-    """
-    Compute per-type quotas that scale with the question's complexity.
-
-    For transition_plan questions, the port_matrix quota scales with
-    the number of relevant flows instead of staying at a small fixed cap.
-    """
-    # Base minimums: ensure at least this many per type if available
     minimums = {
-        "port_matrix": 2,
-        "flows": 2,
-        "blocked_flows": 1,
+        "technical_matrix": 2,
+        "required_flows": 2,
+        "unnecessary_access": 1,
         "target_intent": 1,
         "open_questions": 0,
         "dependencies": 0,
     }
 
-    # Maximums: hard caps per type (out of top_k)
     maximums = {
-        "port_matrix": 4,
-        "flows": 3,
-        "blocked_flows": 2,
+        "technical_matrix": 4,
+        "required_flows": 3,
+        "unnecessary_access": 2,
         "target_intent": 2,
         "open_questions": 1,
         "dependencies": 1,
     }
 
     if "transition_plan" in intents:
-        # Scale port_matrix to cover most relevant flows
-        maximums["port_matrix"] = max(12, n_relevant_flows)
-        maximums["flows"] = 5
-        maximums["blocked_flows"] = 4
+        maximums["technical_matrix"] = max(12, n_relevant_flows)
+        maximums["required_flows"] = 5
+        maximums["unnecessary_access"] = 4
         maximums["target_intent"] = 3
-        minimums["blocked_flows"] = 2
+        minimums["unnecessary_access"] = 2
         minimums["target_intent"] = 1
 
-    if "unresolved" in intents:
+    if "uncertainty" in intents:
         minimums["open_questions"] = 2
         maximums["open_questions"] = 4
 
-    if "allow_list" in intents and "transition_plan" not in intents:
-        maximums["port_matrix"] = max(8, n_relevant_flows)
-        maximums["flows"] = 4
+    if "required_flows" in intents and "transition_plan" not in intents:
+        maximums["technical_matrix"] = max(8, n_relevant_flows)
+        maximums["required_flows"] = 4
 
     if "dependencies" in intents:
         minimums["dependencies"] = 1
         maximums["dependencies"] = 3
-
-    if "required_flows" in intents and "transition_plan" not in intents:
-        maximums["flows"] = 5
 
     return {"minimums": minimums, "maximums": maximums}
 
@@ -431,21 +491,11 @@ def select_with_coverage(
     focus: dict,
     top_k: int = 10,
 ) -> list[tuple[int, dict]]:
-    """
-    Coverage-aware selection that ensures:
-    1. Minimum representation of each relevant chunk type
-    2. Maximizes asset-pair coverage for flow chunks
-    3. For transition_plan, port_matrix is primary (has exact port/protocol),
-       flows is secondary (has semantic reasoning)
-    4. Respects per-type caps to maintain diversity
-
-    scored_chunks: list of (score, chunk, score_breakdown)
-    """
-    focus_set = set(focus["all_assets"])
+    focus_set = set(focus["all_entities"])
     n_relevant_flows = sum(
-        1 for _, c, _ in scored_chunks
-        if c.get("chunk_type") in ("port_matrix", "flows")
-        and chunk_touches_assets(c, focus_set)
+        1 for _, chunk, _ in scored_chunks
+        if chunk.get("chunk_type") in ("technical_matrix", "required_flows")
+        and chunk_touches_entities(chunk, focus_set)
     )
 
     quotas = compute_dynamic_quotas(intents, n_relevant_flows)
@@ -455,164 +505,138 @@ def select_with_coverage(
     selected = []
     used_ids = set()
     type_counts = defaultdict(int)
-    covered_pairs_by_type = defaultdict(set)  # per-type pair tracking
-    covered_pairs_global = set()
+    covered_pairs_by_type = defaultdict(set)
 
     def can_add(chunk):
-        cid = chunk["chunk_id"]
-        if cid in used_ids:
+        chunk_id = chunk["chunk_id"]
+        chunk_type = chunk.get("chunk_type", "general")
+
+        if chunk_id in used_ids:
             return False
-        ctype = chunk.get("chunk_type", "general")
-        if type_counts[ctype] >= maximums.get(ctype, top_k):
+
+        if type_counts[chunk_type] >= maximums.get(chunk_type, top_k):
             return False
+
         return True
 
     def do_add(score, chunk):
-        cid = chunk["chunk_id"]
-        ctype = chunk.get("chunk_type", "general")
+        chunk_id = chunk["chunk_id"]
+        chunk_type = chunk.get("chunk_type", "general")
+
         selected.append((score, chunk))
-        used_ids.add(cid)
-        type_counts[ctype] += 1
+        used_ids.add(chunk_id)
+        type_counts[chunk_type] += 1
+
         pair = chunk_flow_pair(chunk)
         if pair:
-            covered_pairs_by_type[ctype].add(pair)
-            covered_pairs_global.add(pair)
-        return True
+            covered_pairs_by_type[chunk_type].add(pair)
 
-    # For transition_plan: port_matrix first (exact details), then flows (reasoning),
-    # then blocked_flows, target_intent. Otherwise: natural order.
-    if intents & {"transition_plan", "allow_list"}:
-        min_order = ["port_matrix", "flows", "blocked_flows", "target_intent",
-                     "open_questions", "dependencies"]
+    if intents & {"transition_plan", "required_flows"}:
+        min_order = ["technical_matrix", "required_flows", "unnecessary_access", "target_intent", "open_questions", "dependencies"]
     else:
         min_order = list(minimums.keys())
 
-    # ── Pass 1: Satisfy minimums in priority order ──
-    for ctype in min_order:
-        min_count = minimums.get(ctype, 0)
+    # Pass 1: minimums
+    for chunk_type in min_order:
+        min_count = minimums.get(chunk_type, 0)
         if min_count <= 0:
             continue
+
         count = 0
         for score, chunk, _ in scored_chunks:
             if count >= min_count:
                 break
-            if chunk.get("chunk_type") == ctype and can_add(chunk):
+
+            if chunk.get("chunk_type") == chunk_type and can_add(chunk):
                 do_add(score, chunk)
                 count += 1
 
-    # ── Pass 2: Coverage expansion for port_matrix (highest priority) ──
-    # Add port_matrix chunks that cover NEW asset-pairs.
-    if intents & {"transition_plan", "allow_list", "required_flows", "ports_protocols"}:
+    # Pass 2: expand technical_matrix coverage first
+    if intents & {"transition_plan", "required_flows", "technical_details"}:
         for score, chunk, _ in scored_chunks:
             if len(selected) >= top_k:
                 break
-            ctype = chunk.get("chunk_type", "general")
-            if ctype != "port_matrix":
+
+            if chunk.get("chunk_type") != "technical_matrix":
                 continue
             if not can_add(chunk):
                 continue
+
             pair = chunk_flow_pair(chunk)
-            # Add if this pair isn't yet covered by ANY port_matrix chunk
-            if pair and pair not in covered_pairs_by_type.get("port_matrix", set()):
-                if chunk_touches_assets(chunk, focus_set):
+            if pair and pair not in covered_pairs_by_type.get("technical_matrix", set()):
+                if chunk_touches_entities(chunk, focus_set):
                     do_add(score, chunk)
 
-    # ── Pass 3: Coverage expansion for flows (secondary) ──
-    if intents & {"transition_plan", "allow_list", "required_flows"}:
+    # Pass 3: expand required_flows coverage second
+    if intents & {"transition_plan", "required_flows"}:
         for score, chunk, _ in scored_chunks:
             if len(selected) >= top_k:
                 break
-            ctype = chunk.get("chunk_type", "general")
-            if ctype != "flows":
+
+            if chunk.get("chunk_type") != "required_flows":
                 continue
             if not can_add(chunk):
                 continue
+
             pair = chunk_flow_pair(chunk)
-            # Add if this route isn't covered by port_matrix already
-            if pair and pair not in covered_pairs_by_type.get("port_matrix", set()):
-                if chunk_touches_assets(chunk, focus_set):
+            if pair and pair not in covered_pairs_by_type.get("technical_matrix", set()):
+                if chunk_touches_entities(chunk, focus_set):
                     do_add(score, chunk)
 
-    # ── Pass 4: Fill remaining slots by score ──
+    # Pass 4: fill by score
     for score, chunk, _ in scored_chunks:
         if len(selected) >= top_k:
             break
+
         if can_add(chunk):
             do_add(score, chunk)
 
-    # Sort final list by score descending
     selected.sort(key=lambda x: x[0], reverse=True)
     return selected[:top_k]
 
 
-# ─── Main retrieval pipeline ────────────────────────────────────
+# ──────────────────────────────────────────────────────────────
+# Main retrieval pipelines
+# ──────────────────────────────────────────────────────────────
 
 def retrieve_top_chunks(question: str, top_k: int = 10, debug: bool = False):
-    """
-    Main entry point.
-    Returns: list of (score, chunk) tuples.
-    If debug=True, also prints scoring breakdowns.
-    """
     chunks = load_chunks()
     model = load_model()
 
     intents = detect_intents(question)
     focus = build_focus_set(model, question)
 
-    # Score all chunks
     scored = []
     for chunk in chunks:
         result = score_chunk(question, chunk, focus, intents)
         if result["total"] > 0:
             scored.append((result["total"], chunk, result["breakdown"]))
 
-    # Sort by score descending
     scored.sort(key=lambda x: x[0], reverse=True)
-
-    if debug:
-        print(f"Intents: {intents}")
-        print(f"Focus: zones={focus['zones']}, zone_assets={focus['zone_assets']}, "
-              f"dep_assets={focus['dep_assets']}")
-        print(f"Scored chunks: {len(scored)}")
-        print()
-
-    # Select with coverage awareness
     results = select_with_coverage(scored, intents, focus, top_k=top_k)
 
     if debug:
-        # Also show what was scored but not selected
-        selected_ids = {c["chunk_id"] for _, c in results}
-        missed_important = [
-            (s, c, b) for s, c, b in scored[:50]
-            if c["chunk_id"] not in selected_ids
-            and c["chunk_type"] in ("port_matrix", "flows", "blocked_flows", "open_questions")
-        ]
-        if missed_important:
-            print(f"\n--- Scored but not selected (top flow-relevant) ---")
-            for s, c, b in missed_important[:10]:
-                print(f"  score={s:3d} | {c['chunk_type']:15s} | {c['chunk_id']} | "
-                      f"{c['section_title'][:55]}")
+        print(f"Intents: {intents}")
+        print(
+            f"Focus: scope_units={focus['scope_units']}, "
+            f"scope_expanded_entities={focus['scope_expanded_entities']}, "
+            f"dep_entities={focus['dep_entities']}"
+        )
+        print(f"Scored chunks: {len(scored)}")
 
     return results
 
 
 def retrieve_with_metadata(question: str, top_k: int = 10):
-    """
-    Extended entry point that returns retrieval results along with
-    the detected intents and focus set, so the calling agent can
-    reuse them instead of re-computing.
-
-    Returns: {
-        "chunks": list of (score, chunk),
-        "intents": set[str],
-        "focus": dict,
-    }
-    """
     chunks = load_chunks()
     model = load_model()
 
     intents = detect_intents(question)
     focus = build_focus_set(model, question)
+
+    # Let internal dynamic policy raise top_k when needed, but never lower caller intent.
+    rag_params = compute_rag_params(intents)
+    effective_top_k = max(top_k, rag_params["top_k"])
 
     scored = []
     for chunk in chunks:
@@ -621,7 +645,7 @@ def retrieve_with_metadata(question: str, top_k: int = 10):
             scored.append((result["total"], chunk, result["breakdown"]))
 
     scored.sort(key=lambda x: x[0], reverse=True)
-    results = select_with_coverage(scored, intents, focus, top_k=top_k)
+    results = select_with_coverage(scored, intents, focus, top_k=effective_top_k)
 
     return {
         "chunks": results,
@@ -630,10 +654,12 @@ def retrieve_with_metadata(question: str, top_k: int = 10):
     }
 
 
-# ─── CLI ─────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────
+# CLI
+# ──────────────────────────────────────────────────────────────
 
 def main():
-    print("RAG Retriever v2 (connectivity-aware)")
+    print("RAG Retriever v2 (advanced, new knowledge architecture)")
     print("Type a question, or 'exit' to quit.\n")
 
     while True:
@@ -655,9 +681,10 @@ def main():
             print(f"    source_file: {chunk['source_file']}")
             print(f"    section_title: {chunk['section_title']}")
             print(f"    chunk_type: {chunk['chunk_type']}")
-            print(f"    entities: {chunk['entities']}")
-            print(f"    flow_assets: {chunk.get('flow_assets', [])}")
-            print(f"    zones: {chunk['zones']}")
+            print(f"    entities: {chunk.get('entities', [])}")
+            print(f"    scope_units: {chunk.get('scope_units', [])}")
+            print(f"    flow_entities: {chunk.get('flow_entities', [])}")
+            print(f"    flow_scope_units: {chunk.get('flow_scope_units', [])}")
             print(f"    text preview: {chunk['text'][:300]}")
             print("-" * 60)
 
