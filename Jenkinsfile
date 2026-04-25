@@ -70,14 +70,30 @@ pipeline {
         }
 
         stage('Code Quality') {
-            steps {
-                echo '=== Code Quality Stage: Placeholder / baseline only ==='
-                echo 'Code Quality has not been fully implemented yet.'
-                echo 'Planned improvement: add Ruff and/or SonarQube/SonarCloud quality checks.'
-                echo 'Future goal: detect maintainability issues, code smells, duplication, and style problems.'
-                echo 'This stage is currently non-blocking and only documents the planned quality analysis work.'
-            }
+    steps {
+        echo '=== Code Quality Stage: Running Ruff static analysis in non-blocking mode ==='
+        echo 'This stage reports maintainability/style issues but does not stop the pipeline yet.'
+
+        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+            sh '''
+                . .venv/bin/activate
+
+                echo "Installing Ruff..."
+                pip install ruff
+
+                echo "Running Ruff code quality checks..."
+                ruff check . \
+                  --exclude .venv \
+                  --exclude __pycache__ \
+                  --exclude .git
+
+                echo "Code Quality stage completed without findings."
+            '''
         }
+
+        echo 'Code Quality stage finished. Any Ruff findings above should be reviewed and fixed in the improvement pass.'
+    }
+}
 
         stage('Security') {
             steps {
