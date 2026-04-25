@@ -1,6 +1,6 @@
 services:
   ai-agent-prod:
-    build: .
+    image: ai-agent-network-model:${APP_VERSION}
     container_name: ai-agent-prod
     env_file:
       - .env.production
