@@ -68,32 +68,55 @@ pipeline {
                 }
             }
         }
-
         stage('Code Quality') {
-    steps {
-        echo '=== Code Quality Stage: Running Ruff static analysis in non-blocking mode ==='
-        echo 'This stage reports maintainability/style issues but does not stop the pipeline yet.'
+            steps {
+                echo '=== Code Quality Stage: Ruff static analysis and SonarCloud scan ==='
+                echo 'This stage currently runs in non-blocking mode so the full pipeline can continue.'
 
-        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-            sh '''
-                . .venv/bin/activate
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    sh '''
+                        . .venv/bin/activate
 
-                echo "Installing Ruff..."
-                pip install ruff
+                        echo "Installing Ruff..."
+                        pip install ruff
 
-                echo "Running Ruff code quality checks..."
-                ruff check . \
-                  --exclude .venv \
-                  --exclude __pycache__ \
-                  --exclude .git
+                        echo "Running Ruff code quality checks..."
+                        ruff check . \
+                          --exclude .venv \
+                          --exclude __pycache__ \
+                          --exclude .git
 
-                echo "Code Quality stage completed without findings."
-            '''
+                        echo "Ruff completed without findings."
+                    '''
+                }
+
+                withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        sh '''
+                            echo "Preparing SonarScanner CLI..."
+
+                            SCANNER_VERSION=8.0.1.6346
+                            SCANNER_DIR=$WORKSPACE/.sonar/sonar-scanner-$SCANNER_VERSION-linux-x64
+
+                            mkdir -p $WORKSPACE/.sonar
+
+                            if [ ! -d "$SCANNER_DIR" ]; then
+                                echo "Downloading SonarScanner CLI..."
+                                curl -sSLo $WORKSPACE/.sonar/sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$SCANNER_VERSION-linux-x64.zip
+                                unzip -o $WORKSPACE/.sonar/sonar-scanner.zip -d $WORKSPACE/.sonar
+                            fi
+
+                            echo "Running SonarCloud analysis..."
+                            $SCANNER_DIR/bin/sonar-scanner -Dsonar.token=$SONAR_TOKEN
+
+                            echo "SonarCloud analysis completed."
+                        '''
+                    }
+                }
+
+                echo 'Code Quality stage finished. Ruff findings and SonarCloud dashboard should be reviewed in the hardening pass.'
+            }
         }
-
-        echo 'Code Quality stage finished. Any Ruff findings above should be reviewed and fixed in the improvement pass.'
-    }
-}
 
         stage('Security') {
             steps {
